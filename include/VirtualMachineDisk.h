@@ -320,6 +320,15 @@ public:
      */
     void datastore_sizes(int& ds_id, long long& img_sz, long long& sys_sz);
 
+    void set_system_ds(const string ds_name);
+
+    /**
+     * Fill TYPE and DISK_TYPE attribute to
+     * @disk disk that will be filled
+     * @ds_name system datastore type
+     */
+    void set_system_attr(const string ds_name);
+
 private:
 
     Snapshots * snapshots;
