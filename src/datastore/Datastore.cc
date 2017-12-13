@@ -377,6 +377,8 @@ int Datastore::set_tm_mad(string &tm_mad, string &error_str)
 
             for (std::vector<std::string>::iterator it = modes.begin() ; it != modes.end(); ++it)
             {
+                ss.str("");
+                ss.clear();
                 ss << "LN_TARGET_" << *it;
                 st = vatt->vector_value((ss.str()).c_str());
 
