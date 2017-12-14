@@ -120,10 +120,11 @@ void Datastore::disk_attribute(
 
     disk->replace("CLUSTER_ID", one_util::join(cluster_ids, ','));
 
-    st = disk->vector_value("MODE");
+    st = disk->vector_value("TM_MAD_SYSTEM");
     if (!st.empty())
     {
-        ss << "CLONE_TARGET_" << st;
+        st = one_util::trim(st);
+        ss << "CLONE_TARGET_" << one_util::toupper(st);;
         get_template_attribute((ss.str()).c_str(), st);
 
         if (st.empty())
@@ -138,12 +139,13 @@ void Datastore::disk_attribute(
         disk->replace("CLONE_TARGET", st);
     }
 
-    st = disk->vector_value("MODE");
+    st = disk->vector_value("TM_MAD_SYSTEM");
     if (!st.empty())
     {
         ss.str("");
         ss.clear();
-        ss << "LN_TARGET_" << st;
+        st = one_util::trim(st);
+        ss << "LN_TARGET_" << one_util::toupper(st);
         get_template_attribute((ss.str()).c_str(), st);
 
         if (st.empty())
@@ -176,12 +178,13 @@ void Datastore::disk_attribute(
 
     type = disk->vector_value("TYPE");
 
-    st = disk->vector_value("MODE");
+    st = disk->vector_value("TM_MAD_SYSTEM");
     if (!st.empty())
     {
         ss.str("");
         ss.clear();
-        ss << "DISK_TYPE_" << st;
+        st = one_util::trim(st);
+        ss << "DISK_TYPE_" << one_util::toupper(st);;
         get_template_attribute((ss.str()).c_str(), st);
         if (!st.empty())
         {
@@ -370,16 +373,18 @@ int Datastore::set_tm_mad(string &tm_mad, string &error_str)
     }
     else
     {
-        st = vatt->vector_value("MODES");
+        st = vatt->vector_value("TM_MAD_SYSTEM");
         if (!st.empty())
         {
             modes = one_util::split(st, ',', true);
+            string s;
 
             for (std::vector<std::string>::iterator it = modes.begin() ; it != modes.end(); ++it)
             {
                 ss.str("");
                 ss.clear();
-                ss << "LN_TARGET_" << *it;
+                s = one_util::trim(*it);
+                ss << "LN_TARGET_" << one_util::toupper(s);
                 st = vatt->vector_value((ss.str()).c_str());
 
                 if (check_tm_target_type(st) == -1)
@@ -391,7 +396,8 @@ int Datastore::set_tm_mad(string &tm_mad, string &error_str)
 
                 ss.str("");
                 ss.clear();
-                ss << "CLONE_TARGET_" << *it;
+                s = one_util::trim(*it);
+                ss << "CLONE_TARGET_" << one_util::toupper(s);
                 st = vatt->vector_value((ss.str()).c_str());
 
                 if (check_tm_target_type(st) == -1)
@@ -403,7 +409,8 @@ int Datastore::set_tm_mad(string &tm_mad, string &error_str)
 
                 ss.str("");
                 ss.clear();
-                ss << "DISK_TYPE_" << *it;
+                s = one_util::trim(*it);
+                ss << "DISK_TYPE_" << one_util::toupper(s);
                 st = vatt->vector_value((ss.str()).c_str());
 
                 if (st.empty())
