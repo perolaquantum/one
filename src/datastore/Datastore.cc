@@ -376,6 +376,7 @@ int Datastore::set_tm_mad(string &tm_mad, string &error_str)
         st = vatt->vector_value("TM_MAD_SYSTEM");
         if (!st.empty())
         {
+            replace_template_attribute("TM_MAD_SYSTEM", st);
             modes = one_util::split(st, ',', true);
             string s;
 
