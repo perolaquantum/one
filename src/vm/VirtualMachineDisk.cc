@@ -138,6 +138,22 @@ int VirtualMachineDisk::get_image_id(int &id, int uid)
 }
 
 /* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+
+string VirtualMachineDisk::get_tm_mad_system()
+{
+    std::string tm_mad_system;
+
+    if (vector_value("TM_MAD_SYSTEM", tm_mad_system) != 0)
+    {
+        return "";
+    }
+
+    return one_util::toupper(tm_mad_system);
+}
+
+/* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
 void VirtualMachineDisk::extended_info(int uid)
@@ -1585,6 +1601,27 @@ void VirtualMachineDisk::set_system_attr(const string ds_name){
                 replace("TYPE", ds_name);
                 break;
         }
+}
+
+string VirtualMachineDisks::check_tm_mad_system(){
+    string tm_mad_system, bck_tm_mad_system = "";
+    for ( disk_iterator disk = begin() ; disk != end() ; ++disk )
+    {
+        tm_mad_system = (*disk)->get_tm_mad_system();
+        if (bck_tm_mad_system == "")
+        {
+            bck_tm_mad_system = tm_mad_system;
+        }
+        if (tm_mad_system != "" && tm_mad_system != bck_tm_mad_system)
+        {
+            return "";
+        }
+    }
+    if (bck_tm_mad_system.empty())
+    {
+        return "NONE";
+    }
+    return bck_tm_mad_system;
 }
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */

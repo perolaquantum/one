@@ -162,6 +162,11 @@ public:
      */
     int get_image_id(int &id, int uid);
 
+    /**
+     *  Return the TM_MAD_SYSTEM attribute
+     */
+    std::string get_tm_mad_system();
+
     /* ---------------------------------------------------------------------- */
     /* Image Manager Interface                                                */
     /* ---------------------------------------------------------------------- */
@@ -744,6 +749,12 @@ public:
      */
     void delete_non_persistent_resizes(Template **vm_quotas,
         vector<Template *> &ds_quotas);
+
+    /**
+     * check all tm_mad_system attributes and it compare them to verify if they have the same value.
+     * Returns the tm_mad_system if all are the same , NONE if neither have TM_MAD_SYSTEM and "" if aren't the same.
+     */
+    std::string check_tm_mad_system();
 
 protected:
 

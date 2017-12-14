@@ -1401,6 +1401,7 @@ error_common:
 int VirtualMachine::automatic_requirements(set<int>& cluster_ids,
     string& error_str)
 {
+    string tm_mad_system;
     ostringstream   oss;
     set<string>     clouds;
 
@@ -1452,19 +1453,37 @@ int VirtualMachine::automatic_requirements(set<int>& cluster_ids,
 
     obj_template->add("AUTOMATIC_REQUIREMENTS", oss.str());
 
+    oss.str("");
+    tm_mad_system = disks.check_tm_mad_system();
+    if (tm_mad_system.empty())
+    {
+        error_str = "Error when checking TM_MAD_SYSTEM of the disks";
+        return -1;
+    }
+    else if (tm_mad_system != "NONE")
+    {
+        oss << "(\"TM_MAD\" = " << tm_mad_system << " ) & ";
+    }
     // Set automatic System DS requirements
 
     if ( !cluster_ids.empty() )
     {
-        oss.str("");
 
         set<int>::iterator i = cluster_ids.begin();
-
+        if (tm_mad_system != "NONE")
+        {
+            oss << "( ";
+        }
         oss << "\"CLUSTERS/ID\" @> " << *i;
 
         for (++i; i != cluster_ids.end(); i++)
         {
             oss << " | \"CLUSTERS/ID\" @> " << *i;
+        }
+
+        if (tm_mad_system != "NONE")
+        {
+            oss << " )";
         }
 
         obj_template->add("AUTOMATIC_DS_REQUIREMENTS", oss.str());
