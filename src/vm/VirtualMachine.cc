@@ -1462,7 +1462,7 @@ int VirtualMachine::automatic_requirements(set<int>& cluster_ids,
     }
     else if (tm_mad_system != "NONE")
     {
-        oss << "(\"TM_MAD\" = " << tm_mad_system << " ) & ";
+        oss << "( TM_MAD = " << one_util::trim(tm_mad_system) << " ) & ";
     }
     // Set automatic System DS requirements
 

@@ -150,7 +150,7 @@ string VirtualMachineDisk::get_tm_mad_system()
         return "";
     }
 
-    return one_util::toupper(tm_mad_system);
+    return tm_mad_system;
 }
 
 /* -------------------------------------------------------------------------- */
