@@ -104,11 +104,10 @@ void Datastore::disk_attribute(
         VirtualMachineDisk *    disk,
         const vector<string>&   inherit_attrs)
 {
-    string st;
+    string st, tm_mad;
     string inherit_val;
     string current_val;
     string type;
-    std::stringstream ss;
 
     vector<string>::const_iterator it;
 
@@ -120,41 +119,47 @@ void Datastore::disk_attribute(
 
     disk->replace("CLUSTER_ID", one_util::join(cluster_ids, ','));
 
-    st = disk->vector_value("TM_MAD_SYSTEM");
-    if (!st.empty())
+    tm_mad = disk->get_tm_mad_system();
+
+    if (!tm_mad.empty())
     {
-        st = one_util::trim(st);
-        ss << "CLONE_TARGET_" << one_util::toupper(st);;
-        get_template_attribute((ss.str()).c_str(), st);
+        string tm_mad_t = one_util::trim(tm_mad);
+        tm_mad = one_util::toupper(tm_mad_t);
+    }
+
+    if (!tm_mad.empty())
+    {
+        get_template_attribute("CLONE_TARGET_" + tm_mad, st);
 
         if (st.empty())
         {
             get_template_attribute("CLONE_TARGET", st);
         }
-    } else  {
+    }
+    else
+    {
         get_template_attribute("CLONE_TARGET", st);
     }
+
     if(!st.empty())
     {
         disk->replace("CLONE_TARGET", st);
     }
 
-    st = disk->vector_value("TM_MAD_SYSTEM");
-    if (!st.empty())
+    if (!tm_mad.empty())
     {
-        ss.str("");
-        ss.clear();
-        st = one_util::trim(st);
-        ss << "LN_TARGET_" << one_util::toupper(st);
-        get_template_attribute((ss.str()).c_str(), st);
+        get_template_attribute("LN_TARGET_" + tm_mad, st);
 
         if (st.empty())
         {
             get_template_attribute("LN_TARGET", st);
         }
-    } else  {
+    }
+    else
+    {
         get_template_attribute("LN_TARGET", st);
     }
+
     if(!st.empty())
     {
         disk->replace("LN_TARGET", st);
@@ -171,26 +176,21 @@ void Datastore::disk_attribute(
         }
     }
 
-    if (disk->is_volatile())
+    if (!tm_mad.empty())
+    {
+        get_template_attribute("DISK_TYPE_" + tm_mad, st);
+
+        if (!st.empty())
+        {
+            disk->set_types(st);
+        }
+    }
+    else if (disk->is_volatile())
     {
         disk->replace("DISK_TYPE", Image::disk_type_to_str(get_disk_type()));
     }
 
     type = disk->vector_value("TYPE");
-
-    st = disk->vector_value("TM_MAD_SYSTEM");
-    if (!st.empty())
-    {
-        ss.str("");
-        ss.clear();
-        st = one_util::trim(st);
-        ss << "DISK_TYPE_" << one_util::toupper(st);;
-        get_template_attribute((ss.str()).c_str(), st);
-        if (!st.empty())
-        {
-            disk->set_system_ds(st);
-        }
-    }
 
     if (type != "CDROM")
     {
@@ -324,7 +324,6 @@ int Datastore::set_tm_mad(string &tm_mad, string &error_str)
 {
     const VectorAttribute* vatt;
 
-    string st;
     std::vector<std::string> modes;
 
     ostringstream oss;
@@ -373,53 +372,49 @@ int Datastore::set_tm_mad(string &tm_mad, string &error_str)
     }
     else
     {
-        st = vatt->vector_value("TM_MAD_SYSTEM");
+        string st = vatt->vector_value("TM_MAD_SYSTEM");
+
         if (!st.empty())
         {
+            std::vector<std::string>::iterator it;
+
             replace_template_attribute("TM_MAD_SYSTEM", st);
+
             modes = one_util::split(st, ',', true);
+
             string s;
 
-            for (std::vector<std::string>::iterator it = modes.begin() ; it != modes.end(); ++it)
+            for (it = modes.begin() ; it != modes.end(); ++it)
             {
-                ss.str("");
-                ss.clear();
-                s = one_util::trim(*it);
-                ss << "LN_TARGET_" << one_util::toupper(s);
-                st = vatt->vector_value((ss.str()).c_str());
+                string tm_mad_t = one_util::trim(*it);
+                string tm_mad = one_util::toupper(tm_mad_t);
+
+                st = vatt->vector_value("LN_TARGET_" + tm_mad);
 
                 if (check_tm_target_type(st) == -1)
                 {
                     goto error;
                 }
 
-                replace_template_attribute((ss.str()).c_str(), st);
+                replace_template_attribute("LN_TARGET_" + tm_mad, st);
 
-                ss.str("");
-                ss.clear();
-                s = one_util::trim(*it);
-                ss << "CLONE_TARGET_" << one_util::toupper(s);
-                st = vatt->vector_value((ss.str()).c_str());
+                st = vatt->vector_value("CLONE_TARGET_" + tm_mad);
 
                 if (check_tm_target_type(st) == -1)
                 {
                     goto error;
                 }
 
-                replace_template_attribute((ss.str()).c_str(), st);
+                replace_template_attribute("CLONE_TARGET_" + tm_mad, st);
 
-                ss.str("");
-                ss.clear();
-                s = one_util::trim(*it);
-                ss << "DISK_TYPE_" << one_util::toupper(s);
-                st = vatt->vector_value((ss.str()).c_str());
+                st = vatt->vector_value("DISK_TYPE_" + tm_mad);
 
                 if (st.empty())
                 {
                     goto error;
                 }
 
-                replace_template_attribute((ss.str()).c_str(), st);
+                replace_template_attribute("DISK_TYPE_" + tm_mad, st);
             }
         }
 

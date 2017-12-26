@@ -325,14 +325,12 @@ public:
      */
     void datastore_sizes(int& ds_id, long long& img_sz, long long& sys_sz);
 
-    void set_system_ds(const string ds_name);
-
     /**
-     * Fill TYPE and DISK_TYPE attribute to
-     * @disk disk that will be filled
-     * @ds_name system datastore type
+     *  Update the TYPE and DISK_TYPE attributes based on the system DS
+     *  name
+     *    @param ds_name of the system ds tm_mad
      */
-    void set_system_attr(const string ds_name);
+    void set_types(const string& ds_name);
 
 private:
 
@@ -492,13 +490,15 @@ public:
      *  Get all disk images for this Virtual Machine
      *  @param vm_id of the VirtualMachine
      *  @param uid of owner
+     *  @param tm_mad_sys tm_mad_sys mode to deploy the disks
      *  @param disks list of DISK Attribute in VirtualMachine Template
      *  @param context attribute, 0 if none
      *  @param error_str Returns the error reason, if any
      *  @return 0 if success
      */
-    int get_images(int vm_id, int uid, vector<Attribute *> disks,
-            VectorAttribute * context, std::string& error_str);
+    int get_images(int vm_id, int uid, const std::string& tm_mad_sys,
+            vector<Attribute *> disks, VectorAttribute * context,
+            std::string& error_str);
 
     /**
      *  Release the images in the disk set
@@ -749,12 +749,6 @@ public:
      */
     void delete_non_persistent_resizes(Template **vm_quotas,
         vector<Template *> &ds_quotas);
-
-    /**
-     * check all tm_mad_system attributes and it compare them to verify if they have the same value.
-     * Returns the tm_mad_system if all are the same , NONE if neither have TM_MAD_SYSTEM and "" if aren't the same.
-     */
-    std::string check_tm_mad_system();
 
 protected:
 

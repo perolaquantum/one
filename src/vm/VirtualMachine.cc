@@ -505,7 +505,7 @@ int VirtualMachine::select(SqlDB * db)
         return rc;
     }
 
-    //Get History Records. 
+    //Get History Records.
     if( hasHistory() )
     {
         last_seq = history->seq;
@@ -1454,37 +1454,26 @@ int VirtualMachine::automatic_requirements(set<int>& cluster_ids,
     obj_template->add("AUTOMATIC_REQUIREMENTS", oss.str());
 
     oss.str("");
-    tm_mad_system = disks.check_tm_mad_system();
-    if (tm_mad_system.empty())
+
+    if ( obj_template->get("TM_MAD_SYSTEM", tm_mad_system) )
     {
-        error_str = "Error when checking TM_MAD_SYSTEM of the disks";
-        return -1;
+        oss << "(TM_MAD = " << one_util::trim(tm_mad_system) << ") & ";
     }
-    else if (tm_mad_system != "NONE")
-    {
-        oss << "( TM_MAD = " << one_util::trim(tm_mad_system) << " ) & ";
-    }
+
     // Set automatic System DS requirements
 
     if ( !cluster_ids.empty() )
     {
-
         set<int>::iterator i = cluster_ids.begin();
-        if (tm_mad_system != "NONE")
-        {
-            oss << "( ";
-        }
-        oss << "\"CLUSTERS/ID\" @> " << *i;
+
+        oss << "(\"CLUSTERS/ID\" @> " << *i;
 
         for (++i; i != cluster_ids.end(); i++)
         {
             oss << " | \"CLUSTERS/ID\" @> " << *i;
         }
 
-        if (tm_mad_system != "NONE")
-        {
-            oss << " )";
-        }
+        oss << ")";
 
         obj_template->add("AUTOMATIC_DS_REQUIREMENTS", oss.str());
     }
@@ -2144,7 +2133,7 @@ int VirtualMachine::from_xml(const string &xml_str)
     // -------------------------------------------------------------------------
     int last_seq;
 
-    if ( xpath(last_seq,"/VM/HISTORY_RECORDS/HISTORY/SEQ", -1) == 0 && 
+    if ( xpath(last_seq,"/VM/HISTORY_RECORDS/HISTORY/SEQ", -1) == 0 &&
             last_seq != -1 )
     {
         history_records.resize(last_seq + 1);
@@ -2675,7 +2664,19 @@ int VirtualMachine::get_disk_images(string& error_str)
         context = static_cast<VectorAttribute * >(acontext_disks[0]);
     }
 
-    return disks.get_images(oid, uid, adisks, context, error_str);
+    // -------------------------------------------------------------------------
+    // Deployment mode for the VM disks
+    // -------------------------------------------------------------------------
+    std::string tm_mad_sys;
+
+    if ( user_obj_template->get("TM_MAD_SYSTEM", tm_mad_sys) == true )
+    {
+        user_obj_template->erase("TM_MAD_SYSTEM");
+
+        obj_template->add("TM_MAD_SYSTEM", tm_mad_sys);
+    }
+
+    return disks.get_images(oid, uid, tm_mad_sys, adisks, context, error_str);
 }
 
 /* -------------------------------------------------------------------------- */

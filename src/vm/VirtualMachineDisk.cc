@@ -138,7 +138,6 @@ int VirtualMachineDisk::get_image_id(int &id, int uid)
 }
 
 /* -------------------------------------------------------------------------- */
-
 /* -------------------------------------------------------------------------- */
 
 string VirtualMachineDisk::get_tm_mad_system()
@@ -522,6 +521,37 @@ void VirtualMachineDisk::clear_resize(bool restore)
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
+
+void VirtualMachineDisk::set_types(const string& ds_name)
+{
+    string type = vector_value("TYPE");
+
+    switch(Image::str_to_disk_type(type))
+    {
+        case Image::RBD_CDROM:
+        case Image::GLUSTER_CDROM:
+        case Image::SHEEPDOG_CDROM:
+        case Image::CD_ROM:
+            if (ds_name != "FILE" && ds_name != "ISCSI" && ds_name != "NONE")
+            {
+                replace("TYPE", ds_name+"_CDROM");
+            }
+            else
+            {
+                replace("TYPE", "CDROM");
+            }
+            break;
+
+        default:
+            replace("TYPE", ds_name);
+            break;
+    }
+
+    replace("DISK_TYPE", ds_name);
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
@@ -678,7 +708,7 @@ void VirtualMachineDisks::assign_disk_targets(
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int VirtualMachineDisks::get_images(int vm_id, int uid,
+int VirtualMachineDisks::get_images(int vm_id, int uid, const std::string& tsys,
         vector<Attribute *> disks, VectorAttribute * vcontext,
         std::string& error_str)
 {
@@ -710,6 +740,15 @@ int VirtualMachineDisks::get_images(int vm_id, int uid,
         // Initialize DISK attribute information and acquire associated IMAGE
         // ---------------------------------------------------------------------
         VirtualMachineDisk * disk = new VirtualMachineDisk(vdisk, disk_id);
+
+        if ( !tsys.empty() )
+        {
+            disk->replace("TM_MAD_SYSTEM", tsys);
+        }
+        else
+        {
+            disk->remove("TM_MAD_SYSTEM");
+        }
 
         if ( ipool->acquire_disk(vm_id, disk, disk_id, image_type, dev_prefix,
                 uid, image_id, &snapshots, error_str) != 0 )
@@ -1575,53 +1614,5 @@ void VirtualMachineDisks::delete_non_persistent_resizes(Template **vm_quotas,
     }
 }
 
-void VirtualMachineDisk::set_system_ds(const string ds_name)
-{
-    replace("DISK_TYPE", ds_name);
-    set_system_attr(ds_name);
-}
-
-void VirtualMachineDisk::set_system_attr(const string ds_name){
-    string type;
-    type = vector_value("TYPE");
-        switch(Image::str_to_disk_type(type))
-        {
-            case Image::RBD_CDROM:
-            case Image::GLUSTER_CDROM:
-            case Image::SHEEPDOG_CDROM:
-            case Image::CD_ROM:
-                if (ds_name != "FILE" && ds_name != "ISCSI" && ds_name != "NONE")
-                {
-                    replace("TYPE", ds_name+"_CDROM");
-                } else {
-                    replace("TYPE", "CDROM");
-                }
-                break;
-            default:
-                replace("TYPE", ds_name);
-                break;
-        }
-}
-
-string VirtualMachineDisks::check_tm_mad_system(){
-    string tm_mad_system, bck_tm_mad_system = "";
-    for ( disk_iterator disk = begin() ; disk != end() ; ++disk )
-    {
-        tm_mad_system = (*disk)->get_tm_mad_system();
-        if (bck_tm_mad_system == "")
-        {
-            bck_tm_mad_system = tm_mad_system;
-        }
-        if (tm_mad_system != "" && tm_mad_system != bck_tm_mad_system)
-        {
-            return "";
-        }
-    }
-    if (bck_tm_mad_system.empty())
-    {
-        return "NONE";
-    }
-    return bck_tm_mad_system;
-}
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */

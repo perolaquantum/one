@@ -378,6 +378,12 @@ public:
         return obj_template->get(name,value);
     }
 
+	template<typename T>
+    bool get_template_attribute(const string& name, T& value) const
+    {
+        return obj_template->get(name,value);
+    }
+
     /**
      *  These methods get and remove a string based attribute (single)
      *    @param name of the attribute
