@@ -2710,7 +2710,14 @@ int VirtualMachine::set_up_attach_disk(VirtualMachineTemplate * tmpl, string& er
 
     VirtualMachineDisk * new_disk;
 
-    new_disk = disks.set_up_attach(oid, uid, get_cid(), new_vdisk, context, err);
+    // -------------------------------------------------------------------------
+    // Deployment mode for the VM disks
+    // -------------------------------------------------------------------------
+    std::string tm_mad_sys;
+
+    obj_template->get("TM_MAD_SYSTEM", tm_mad_sys);
+
+    new_disk = disks.set_up_attach(oid, uid, get_cid(), new_vdisk, tm_mad_sys, context, err);
 
     if ( new_disk == 0 )
     {

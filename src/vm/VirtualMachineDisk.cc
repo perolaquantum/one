@@ -1014,7 +1014,7 @@ int VirtualMachineDisks::set_attach(int id)
 /* -------------------------------------------------------------------------- */
 
 VirtualMachineDisk * VirtualMachineDisks::set_up_attach(int vmid, int uid,
-        int cluster_id, VectorAttribute * vdisk, VectorAttribute * vcontext,
+        int cluster_id, VectorAttribute * vdisk, const std::string& tsys, VectorAttribute * vcontext,
         string& error)
 {
     set<string> used_targets;
@@ -1138,6 +1138,14 @@ VirtualMachineDisk * VirtualMachineDisks::set_up_attach(int vmid, int uid,
     // -------------------------------------------------------------------------
 
     disk->set_attach();
+    if ( !tsys.empty() )
+    {
+        disk->replace("TM_MAD_SYSTEM", tsys);
+    }
+    else
+    {
+        disk->remove("TM_MAD_SYSTEM");
+    }
 
     add_attribute(disk, disk->get_disk_id());
 

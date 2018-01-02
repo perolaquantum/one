@@ -576,7 +576,8 @@ public:
      *     @return Pointer to the new disk or 0 in case of error
      */
     VirtualMachineDisk * set_up_attach(int vmid, int uid, int cluster_id,
-            VectorAttribute * vdisk, VectorAttribute * vcontext, string& error);
+            VectorAttribute * vdisk, const std::string& tsys,
+            VectorAttribute * vcontext, string& error);
 
     /* ---------------------------------------------------------------------- */
     /* Save as Interface                                                      */
