@@ -26,7 +26,6 @@ define(function(require) {
   var WizardFields = require('utils/wizard-fields');
   var UniqueId = require('utils/unique-id');
   var TemplateUtils = require('utils/template-utils');
-  var OpenNebula = require('opennebula');
 
   /*
     TEMPLATES
@@ -170,10 +169,6 @@ define(function(require) {
 
   function _fill(context, templateJSON) {
     var selectedContext;
-    var tmpl_tm_mad_system;
-    if (templateJSON.TM_MAD_SYSTEM){
-      tmpl_tm_mad_system = templateJSON.TM_MAD_SYSTEM;
-    }
 
     if(templateJSON.SIZE){
       templateJSON.SIZE = templateJSON.SIZE / 1024;
@@ -189,35 +184,6 @@ define(function(require) {
 
         this.imageTable.selectResourceTableSelect(selectedResources);
 
-        OpenNebula.Image.show({
-          timeout: true,
-          data : {
-            id: templateJSON.IMAGE_ID
-          },
-          success: function(request, obj_file){
-            OpenNebula.Datastore.show({
-              data : {
-                id: obj_file.IMAGE.DATASTORE_ID
-              },
-              timeout: true,
-              success: function(request, ds){
-                  var tm_mad_system = ds.DATASTORE.TEMPLATE.TM_MAD_SYSTEM;
-                  var modes = tm_mad_system.split(",").map(function(item) {
-                    return item.trim();
-                  });
-                  var groupDropdownOptions = '<option value=></option>';
-                  $.each(modes, function(){
-                    groupDropdownOptions +=
-                    '<option elem_id="'+this+'" value="'+this+'">'+this+'</option>';
-                  });
-                  $('select#TM_MAD_SYSTEM', context).html(groupDropdownOptions);
-                  if ( tmpl_tm_mad_system ){
-                    $('select#TM_MAD_SYSTEM', context).val(tmpl_tm_mad_system);
-                  }
-              }
-            });
-          }
-        });
       } else if (templateJSON.IMAGE != undefined && templateJSON.IMAGE_UNAME != undefined) {
         var selectedResources = {
           names : {
@@ -227,37 +193,6 @@ define(function(require) {
         }
 
         this.imageTable.selectResourceTableSelect(selectedResources);
-
-        OpenNebula.Image.show({
-          timeout: true,
-          data : {
-            name: templateJSON.IMAGE,
-            uname: templateJSON.IMAGE_UNAME
-          },
-          success: function(request, obj_file){
-            OpenNebula.Datastore.show({
-              data : {
-                id: obj_file.IMAGE.DATASTORE_ID
-              },
-              timeout: true,
-              success: function(request, ds){
-                  var tm_mad_system = ds.DATASTORE.TEMPLATE.TM_MAD_SYSTEM;
-                  var modes = tm_mad_system.split(",").map(function(item) {
-                    return item.trim();
-                  });
-                  var groupDropdownOptions = '<option value=></option>';
-                  $.each(modes, function(){
-                    groupDropdownOptions +=
-                    '<option elem_id="'+this+'" value="'+this+'">'+this+'</option>';
-                  });
-                  $('select#TM_MAD_SYSTEM', context).html(groupDropdownOptions);
-                  if ( tmpl_tm_mad_system ){
-                    $('select#TM_MAD_SYSTEM', context).val(tmpl_tm_mad_system);
-                  }
-              }
-            });
-          }
-        });
       }
 
       selectedContext = $(".image", context);
