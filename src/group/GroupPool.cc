@@ -96,6 +96,8 @@ error_groups:
 
 int GroupPool::allocate(string name, int * oid, string& error_str)
 {
+    int db_oid;
+
     Group * group;
 
     ostringstream   oss;
@@ -116,9 +118,9 @@ int GroupPool::allocate(string name, int * oid, string& error_str)
     }
 
     // Check for duplicates
-    group = get(name, false);
+    db_oid = exist(name);
 
-    if( group != 0 )
+    if( db_oid != -1 )
     {
         goto error_duplicated;
     }
@@ -132,7 +134,7 @@ int GroupPool::allocate(string name, int * oid, string& error_str)
     return *oid;
 
 error_duplicated:
-    oss << "NAME is already taken by GROUP " << group->get_oid() << ".";
+    oss << "NAME is already taken by GROUP " << db_oid << ".";
     error_str = oss.str();
 
 error_name:

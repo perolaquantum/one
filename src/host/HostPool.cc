@@ -157,6 +157,8 @@ int HostPool::allocate (
     Host *        host;
     ostringstream oss;
 
+    int db_oid;
+
     if ( !PoolObjectSQL::name_is_valid(hostname, error_str) )
     {
         goto error_name;
@@ -172,9 +174,9 @@ int HostPool::allocate (
         goto error_vmm;
     }
 
-    host = get(hostname,false);
+    db_oid = exist(hostname);
 
-    if ( host !=0)
+    if ( db_oid != -1 )
     {
         goto error_duplicated;
     }
@@ -204,7 +206,7 @@ error_vmm:
     goto error_common;
 
 error_duplicated:
-    oss << "NAME is already taken by HOST " << host->get_oid() << ".";
+    oss << "NAME is already taken by HOST " << db_oid << ".";
     error_str = oss.str();
 
 error_name:

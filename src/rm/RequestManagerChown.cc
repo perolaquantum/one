@@ -241,13 +241,10 @@ int RequestManagerChown::check_name_unique(int oid, int noid, RequestAttributes&
 
     object->unlock();
 
-    object = get(name, noid, true);
+    obj_oid = pool->exist(name, noid);
 
-    if ( object != 0 )
+    if ( obj_oid != -1 )
     {
-        obj_oid = object->get_oid();
-        object->unlock();
-
         oss << object_name(PoolObjectSQL::USER) << " ["<<noid<<"] already owns "
             << object_name(auth_object) << " ["<<obj_oid<<"] with NAME " << name;
 

@@ -71,18 +71,21 @@ public:
     PoolObjectSQL * get(int oid, bool lock);
 
     /**
-     * Updates the cache name index. Must be called when the owner of an object
-     * is changed
+     *  Check if there is an object with the same for a given user
+     *    @param name of object
+     *    @param ouid of user
      *
-     * @param old_name Object's name before the change
-     * @param old_uid Object's owner ID before the change
-     * @param new_name Object's name after the change
-     * @param new_uid Object's owner ID after the change
+     *    @return oid of the object if it exists, -1 otherwise
      */
-    void update_cache_index(string& old_name,
-                            int     old_uid,
-                            string& new_name,
-                            int     new_uid);
+    int exist(const string& name, int ouid)
+    {
+        return PoolObjectSQL::select_oid(db, table.c_str(), name, ouid);
+    }
+
+    int exist(const string& name)
+    {
+        return PoolObjectSQL::select_oid(db, table.c_str(), name, -1);
+    }
 
     /**
      *  Finds a set objects that satisfies a given condition
@@ -383,30 +386,7 @@ private:
      *
      * @param oid
      */
-    void flush_cache(int oid);
-
-    /**
-     * Same as flush_cache(int), but with the object name-uid key
-     *
-     * @param name_key
-     */
-    void flush_cache(const string& name_key);
-
-    /**
-     *  Generate an index key for the object
-     *    @param name of the object
-     *    @param uid owner of the object, only used if needed
-     *
-     *    @return the key, a string
-     */
-    virtual string key(const string& name, int uid)
-    {
-        ostringstream key;
-
-        key << name << ':' << uid;
-
-        return key.str();
-    };
+    void flush_pool(int oid);
 
     /* ---------------------------------------------------------------------- */
     /* ---------------------------------------------------------------------- */

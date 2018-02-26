@@ -98,13 +98,13 @@ int ImagePool::allocate (
     ImageManager *  imagem = nd.get_imagem();
 
     Image *         img;
-    Image *         img_aux = 0;
     string          name;
     string          type;
     string          fs_type;
     string          driver;
     ostringstream   oss;
 
+    int db_oid;
     int rc;
 
     img = new Image(uid, gid, uname, gname, umask, img_template);
@@ -142,9 +142,9 @@ int ImagePool::allocate (
         break;
     }
 
-    img_aux = get(name,uid,false);
+    db_oid = exist(name, uid);
 
-    if( img_aux != 0 )
+    if( db_oid != -1 )
     {
         goto error_duplicated;
     }
@@ -272,7 +272,7 @@ error_types_missmatch_image:
     goto error_common;
 
 error_duplicated:
-    oss << "NAME is already taken by IMAGE " << img_aux->get_oid() << ".";
+    oss << "NAME is already taken by IMAGE " << db_oid << ".";
     error_str = oss.str();
 
     goto error_common;

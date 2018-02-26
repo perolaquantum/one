@@ -600,6 +600,17 @@ protected:
     virtual int select(SqlDB *db, const string& _name, int _uid);
 
     /**
+     *  Search oid by its name and owner
+     *    @param db pointer to the db
+     *    @param _table for the objects
+     *    @param _name of the object
+     *    @param _uid of owner
+     *    @return -1 if not found or oid otherwise
+     */
+    static int select_oid(SqlDB *db, const char * _table, const string& _name,
+            int _uid);
+
+    /**
      *  Drops object from the database
      *    @param db pointer to the db
      *    @return 0 on success

@@ -68,20 +68,6 @@ public:
     };
 
     /**
-     *  Gets an object from the pool (if needed the object is loaded from the
-     *  database).
-     *   @param name of the object
-     *   @param uid id of owner
-     *   @param lock locks the object if true
-     *
-     *   @return a pointer to the object, 0 in case of failure
-     */
-    VMTemplate * get(const string& name, int uid, bool lock)
-    {
-        return static_cast<VMTemplate *>(PoolSQL::get(name,uid,lock));
-    };
-
-    /**
      *  Dumps the pool in XML format. A filter can be also added to the
      *  query
      *  @param oss the output stream to dump the pool contents

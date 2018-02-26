@@ -315,7 +315,9 @@ int UserPool::allocate (
     const set<int>& gids,
     string& error_str)
 {
-    Nebula&     nd    = Nebula::instance();
+    Nebula& nd = Nebula::instance();
+
+    int db_oid;
 
     User *      user;
     GroupPool * gpool = nd.get_gpool();
@@ -357,9 +359,9 @@ int UserPool::allocate (
     }
 
     // Check for duplicates
-    user = get(uname,false);
+    db_oid = exist(uname);
 
-    if ( user !=0 )
+    if ( db_oid != -1 )
     {
         goto error_duplicated;
     }
@@ -435,7 +437,7 @@ error_name:
     goto error_common;
 
 error_duplicated:
-    oss << "NAME is already taken by USER " << user->get_oid() << ".";
+    oss << "NAME is already taken by USER " << db_oid << ".";
     goto error_common;
 
 error_no_groups:

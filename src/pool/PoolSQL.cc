@@ -180,7 +180,7 @@ PoolObjectSQL * PoolSQL::get(int oid, bool olock)
 
     lock();
 
-    flush_cache(oid);
+    flush_pool(oid);
 
     PoolObjectSQL * objectsql = create();
 
@@ -216,80 +216,26 @@ PoolObjectSQL * PoolSQL::get(int oid, bool olock)
 
 PoolObjectSQL * PoolSQL::get(const string& name, int ouid, bool olock)
 {
-    lock();
 
-    string name_key = key(name, ouid);
+    int oid = PoolObjectSQL::select_oid(db, table.c_str(), name, ouid);
 
-    flush_cache(name_key);
-
-    PoolObjectSQL * objectsql = create();
-
-    int rc = objectsql->select(db, name, ouid);
-
-    if ( rc != 0 )
+    if ( oid == -1 )
     {
-        objectsql->lock();
-
-        delete objectsql;
-
-        unlock();
-
         return 0;
     }
 
-    pool.push_back(objectsql);
-
-    if ( olock == true )
-    {
-        objectsql->lock();
-    }
-
-    unlock();
-
-    return objectsql;
+    return get(oid, olock);
 }
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-void PoolSQL::flush_cache(int oid)
+void PoolSQL::flush_pool(int oid)
 {
     for (vector<PoolObjectSQL *>::iterator it = pool.begin(); it != pool.end();)
     {
         // The object we are looking for in ::get(). Wait until it is unlocked()
         if ((*it)->oid == oid)
-        {
-            (*it)->lock();
-        }
-        else
-        {
-            // Any other locked object is just ignored
-            int rc = pthread_mutex_trylock(&((*it)->mutex));
-
-            if ( rc == EBUSY ) // In use by other thread
-            {
-                it++;
-                continue;
-            }
-        }
-
-        delete *it;
-
-        it = pool.erase(it);
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
-void PoolSQL::flush_cache(const string& name_key)
-{
-    for (vector<PoolObjectSQL *>::iterator it = pool.begin(); it != pool.end();)
-    {
-        string okey = key((*it)->name, (*it)->uid);
-
-        // The object we are looking for in ::get(). Wait until it is unlocked()
-        if ( name_key == okey)
         {
             (*it)->lock();
         }

@@ -188,8 +188,8 @@ int DatastorePool::allocate(
         string&             error_str)
 {
     Datastore * ds;
-    Datastore * ds_aux = 0;
 
+    int    db_oid;
     string name;
 
     ostringstream oss;
@@ -208,9 +208,10 @@ int DatastorePool::allocate(
         goto error_name;
     }
 
-    ds_aux = get(name,false);
+    // Check for duplicates
+    db_oid = exist(name);
 
-    if( ds_aux != 0 )
+    if( db_oid != -1 )
     {
         goto error_duplicated;
     }
@@ -231,7 +232,7 @@ int DatastorePool::allocate(
     return *oid;
 
 error_duplicated:
-    oss << "NAME is already taken by DATASTORE " << ds_aux->get_oid() << ".";
+    oss << "NAME is already taken by DATASTORE " << db_oid << ".";
     error_str = oss.str();
 
 error_name:

@@ -96,7 +96,8 @@ int MarketPlacePool::allocate(
         std::string&          error_str)
 {
     MarketPlace * mp;
-    MarketPlace * mp_aux = 0;
+
+    int db_oid;
 
     std::string        name;
     std::ostringstream oss;
@@ -115,9 +116,9 @@ int MarketPlacePool::allocate(
 
     mp->zone_id = Nebula::instance().get_zone_id();
 
-    mp_aux = get(name, false);
+    db_oid = exist(name);
 
-    if( mp_aux != 0 )
+    if( db_oid != -1 )
     {
         goto error_duplicated;
     }
@@ -178,7 +179,7 @@ int MarketPlacePool::allocate(
     return *oid;
 
 error_duplicated:
-    oss << "NAME is already taken by MARKETPLACE " << mp_aux->get_oid();
+    oss << "NAME is already taken by MARKETPLACE " << db_oid;
     error_str = oss.str();
 
 error_name:

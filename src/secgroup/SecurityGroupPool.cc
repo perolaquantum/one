@@ -88,8 +88,8 @@ int SecurityGroupPool::allocate(
         string&         error_str)
 {
     SecurityGroup * secgroup;
-    SecurityGroup * secgroup_aux = 0;
 
+    int    db_oid;
     string name;
 
     ostringstream oss;
@@ -107,9 +107,9 @@ int SecurityGroupPool::allocate(
         goto error_name;
     }
 
-    secgroup_aux = get(name,uid,false);
+    db_oid = exist(name, uid);
 
-    if( secgroup_aux != 0 )
+    if( db_oid != -1 )
     {
         goto error_duplicated;
     }
@@ -119,7 +119,7 @@ int SecurityGroupPool::allocate(
     return *oid;
 
 error_duplicated:
-    oss << "NAME is already taken by SecurityGroup " << secgroup_aux->get_oid() << ".";
+    oss << "NAME is already taken by SecurityGroup " << db_oid << ".";
     error_str = oss.str();
 
 error_name:

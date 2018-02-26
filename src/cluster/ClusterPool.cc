@@ -95,6 +95,8 @@ int ClusterPool::allocate(string name, int * oid, string& error_str)
 
     ostringstream oss;
 
+    int db_oid;
+
     // Check name
     if ( !PoolObjectSQL::name_is_valid(name, error_str) )
     {
@@ -102,9 +104,9 @@ int ClusterPool::allocate(string name, int * oid, string& error_str)
     }
 
     // Check for duplicates
-    cluster = get(name, false);
+    db_oid = exist(name);
 
-    if( cluster != 0 )
+    if( db_oid != -1 )
     {
         goto error_duplicated;
     }
@@ -119,7 +121,7 @@ int ClusterPool::allocate(string name, int * oid, string& error_str)
 
 
 error_duplicated:
-    oss << "NAME is already taken by CLUSTER " << cluster->get_oid() << ".";
+    oss << "NAME is already taken by CLUSTER " << db_oid << ".";
     error_str = oss.str();
 
 error_name:

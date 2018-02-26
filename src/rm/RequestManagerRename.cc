@@ -78,18 +78,15 @@ void RequestManagerRename::request_execute(xmlrpc_c::paramList const& paramList,
 
     // ----------------------- Check name uniqueness ---------------------------
 
-    object = get(new_name, operms.uid, true);
+    int db_id = exist(new_name, operms.uid);
 
-    if ( object != 0 )
+    if ( db_id !=-1  )
     {
         ostringstream oss;
-        int id = object->get_oid();
-
-        object->unlock();
 
         oss << object_name(auth_object) << " cannot be renamed to " << new_name
             << " because it collides with " << object_name(auth_object) << " "
-            << id;
+            << db_id;
 
         att.resp_msg = oss.str();
 

@@ -118,8 +118,8 @@ int VirtualNetworkPool::allocate (
         string&                     error_str)
 {
     VirtualNetwork * vn;
-    VirtualNetwork * vn_aux = 0;
 
+    int    db_oid;
     string name;
 
     ostringstream oss;
@@ -136,9 +136,9 @@ int VirtualNetworkPool::allocate (
     }
 
     // Check for duplicates
-    vn_aux = get(name,uid,false);
+    db_oid = exist(name, uid);
 
-    if( vn_aux != 0 )
+    if( db_oid != -1 )
     {
         goto error_duplicated;
     }
@@ -166,7 +166,7 @@ int VirtualNetworkPool::allocate (
 
 
 error_duplicated:
-    oss << "NAME is already taken by NET " << vn_aux->get_oid() << ".";
+    oss << "NAME is already taken by NET " << db_oid << ".";
     error_str = oss.str();
 
 error_name:
