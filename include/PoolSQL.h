@@ -17,13 +17,11 @@
 #ifndef POOL_SQL_H_
 #define POOL_SQL_H_
 
-#include <map>
 #include <string>
-#include <queue>
-#include <set>
 
 #include "SqlDB.h"
 #include "PoolObjectSQL.h"
+#include "PoolSQLCache.h"
 #include "Log.h"
 #include "Hook.h"
 

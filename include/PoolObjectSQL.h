@@ -330,6 +330,15 @@ public:
         pthread_mutex_unlock(&mutex);
     };
 
+    /*+
+     *  Try to lock the object
+     *    @return 0 on success or error_code
+     */
+    int try_lock()
+    {
+        return pthread_mutex_trylock(&mutex);
+    };
+
     /**
      * Function to print the object into a string in XML format
      * base64 encoded
