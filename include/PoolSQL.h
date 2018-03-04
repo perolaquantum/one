@@ -44,7 +44,7 @@ public:
      *   @param _table the name of the table supporting the pool (to set the oid
      *   counter). If null the OID counter is not updated.
      */
-    PoolSQL(SqlDB * _db, const char * _table);
+    PoolSQL(SqlDB * _db, const char * _table, bool only_active = true);
 
     virtual ~PoolSQL();
 
@@ -143,7 +143,8 @@ public:
      */
     virtual int drop(PoolObjectSQL * objsql, string& error_msg)
     {
-        int rc = objsql->drop(db);
+        int oid = objsql->get_oid();
+        int rc  = objsql->drop(db);
 
         if ( rc != 0 )
         {
@@ -155,13 +156,12 @@ public:
             do_hooks(objsql, Hook::REMOVE);
         }
 
+        lock();
+
+        cache.set_deleted(oid);
+
         return 0;
     };
-
-    /**
-     *  Removes all the elements from the pool
-     */
-    void clean();
 
     /**
      *  Dumps the pool in XML format. A filter can be also added to the
@@ -349,10 +349,10 @@ private:
     string table;
 
     /**
-     *  The pool is implemented with a Map of SQL object pointers, using the
-     *  OID as key.
+     *  The pool cache is implemented with a Map of SQL object pointers,
+     *  using the OID as key.
      */
-    vector<PoolObjectSQL *> pool;
+    PoolSQLCache cache;
 
     /**
      *  Factory method, must return an ObjectSQL pointer to an allocated pool
@@ -375,16 +375,6 @@ private:
     {
         pthread_mutex_unlock(&mutex);
     };
-
-    /**
-     * Cleans all the objects in the cache, except the ones locked.
-     * The object with the given oid will not be ignored if locked, the
-     * method will wait for it to be unlocked and ensure it is erased from
-     * the cache
-     *
-     * @param oid
-     */
-    void flush_pool(int oid);
 
     /* ---------------------------------------------------------------------- */
     /* ---------------------------------------------------------------------- */

@@ -42,12 +42,6 @@ int PoolSQLCache::get(int oid, PoolObjectSQL ** object, bool olock)
     {
         return -1;
     }
-    else if ( it->second->dirty || only_active )
-    {
-        delete_cache_line(it);
-
-        return -1;
-    }
     else if ( it->second->deleted )
     {
         delete_cache_line(it);
@@ -55,6 +49,12 @@ int PoolSQLCache::get(int oid, PoolObjectSQL ** object, bool olock)
         *object = 0;
 
         return 0;
+    }
+    else if ( it->second->dirty || only_active )
+    {
+        delete_cache_line(it);
+
+        return -1;
     }
     else
     {
@@ -67,6 +67,19 @@ int PoolSQLCache::get(int oid, PoolObjectSQL ** object, bool olock)
     }
 
     return 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+void PoolSQLCache::set_deleted(int oid)
+{
+    std::map<int, CacheLine *>::iterator it = cache.find(oid);
+
+    if ( it != cache.end() )
+    {
+        it->second->deleted = true;
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -97,30 +110,25 @@ void PoolSQLCache::insert(PoolObjectSQL * object)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
+void PoolSQLCache::enable()
+{
+    Nebula&  nd = Nebula::instance();
+
+    flush_cache_lines();
+
+    only_active = false;
+
+    nd.get_configuration_attribute("POOL_CACHE_SIZE", max_elements);
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
 void PoolSQLCache::disable()
 {
     Nebula&  nd = Nebula::instance();
 
-    std::map<int, CacheLine *>::iterator it;
-
-    for ( it = cache.begin() ; it != cache.end() ; )
-    {
-        int rc = it->second->object->try_lock();
-
-        if ( rc == EBUSY )
-        {
-            it->second->dirty = true;
-
-            ++it;
-            continue;
-        }
-
-        delete it->second->object;
-
-        delete it->second;
-
-        it = cache.erase(it);
-    }
+    flush_cache_lines();
 
     only_active  = true;
 
@@ -153,6 +161,11 @@ void PoolSQLCache::flush_cache_lines()
 {
     std::map<int, CacheLine *>::iterator it;
 
+    while (!fifo.empty())
+    {
+        fifo.pop();
+    }
+
     for ( it = cache.begin() ; it != cache.end() ; )
     {
         // Any other locked object is just ignored
@@ -160,6 +173,10 @@ void PoolSQLCache::flush_cache_lines()
 
         if ( rc == EBUSY ) // In use by other thread
         {
+            fifo.push(it->first);
+
+            it->second->dirty = true;
+
             ++it;
             continue;
         }

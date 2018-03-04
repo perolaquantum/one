@@ -87,8 +87,8 @@ void PoolSQL::set_lastOID(int _last_oid)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-PoolSQL::PoolSQL(SqlDB * _db, const char * _table):
-    db(_db), table(_table)
+PoolSQL::PoolSQL(SqlDB * _db, const char * _table, bool only_active):
+    db(_db), table(_table), cache(only_active)
 {
     pthread_mutex_init(&mutex,0);
 };
@@ -102,12 +102,7 @@ PoolSQL::~PoolSQL()
 
     pthread_mutex_lock(&mutex);
 
-    for ( it = pool.begin(); it != pool.end(); ++it)
-    {
-        (*it)->lock();
-
-        delete *it;
-    }
+    cache.disable();
 
     pthread_mutex_unlock(&mutex);
 
@@ -180,13 +175,22 @@ PoolObjectSQL * PoolSQL::get(int oid, bool olock)
 
     lock();
 
-    flush_pool(oid);
+    PoolObjectSQL * objectsql;
 
-    PoolObjectSQL * objectsql = create();
+    int rc = cache.get(oid, &objectsql, olock);
+
+    if ( rc == 0 )
+    {
+        unlock();
+
+        return objectsql;
+    }
+
+    objectsql = create();
 
     objectsql->oid = oid;
 
-    int rc = objectsql->select(db);
+    rc = objectsql->select(db);
 
     if ( rc != 0 )
     {
@@ -199,12 +203,12 @@ PoolObjectSQL * PoolSQL::get(int oid, bool olock)
         return 0;
     }
 
-    pool.push_back(objectsql);
-
     if ( olock == true )
     {
         objectsql->lock();
     }
+
+    cache.insert(objectsql);
 
     unlock();
 
@@ -225,57 +229,6 @@ PoolObjectSQL * PoolSQL::get(const string& name, int ouid, bool olock)
     }
 
     return get(oid, olock);
-}
-
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
-void PoolSQL::flush_pool(int oid)
-{
-    for (vector<PoolObjectSQL *>::iterator it = pool.begin(); it != pool.end();)
-    {
-        // The object we are looking for in ::get(). Wait until it is unlocked()
-        if ((*it)->oid == oid)
-        {
-            (*it)->lock();
-        }
-        else
-        {
-            // Any other locked object is just ignored
-            int rc = pthread_mutex_trylock(&((*it)->mutex));
-
-            if ( rc == EBUSY ) // In use by other thread
-            {
-                it++;
-                continue;
-            }
-        }
-
-        delete *it;
-
-        it = pool.erase(it);
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
-void PoolSQL::clean()
-{
-    vector<PoolObjectSQL *>::iterator it;
-
-    lock();
-
-    for (it = pool.begin(); it != pool.end(); ++it)
-    {
-        (*it)->lock();
-
-        delete *it;
-    }
-
-    pool.clear();
-
-    unlock();
 }
 
 /* -------------------------------------------------------------------------- */

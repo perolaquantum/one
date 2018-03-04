@@ -31,6 +31,8 @@
  */
 class PoolSQLCache
 {
+public:
+
     PoolSQLCache(bool only_active);
 
     virtual ~PoolSQLCache(){};
@@ -57,10 +59,21 @@ class PoolSQLCache
     void insert(PoolObjectSQL * object);
 
     /**
+     *  Set the deleted flag for the cache line
+     *    @param oid of object
+     */
+    void set_deleted(int oid);
+
+    /**
      *  Disable Cache. Flush cache lines, disable objects in use and update
      *  cache state
      */
     void disable();
+
+    /**
+     *  Activate Cache.
+     */
+    void enable();
 
 private:
     struct CacheLine
