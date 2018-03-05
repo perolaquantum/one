@@ -42,16 +42,13 @@ int PoolSQLCache::get(int oid, PoolObjectSQL ** object, bool olock)
     {
         return -1;
     }
-    else if ( it->second->deleted )
-    {
-        delete_cache_line(it);
-
-        *object = 0;
-
-        return 0;
-    }
     else if ( it->second->dirty || only_active )
     {
+        if ( it->second->object != 0 )
+        {
+            it->second->object->lock();
+        }
+
         delete_cache_line(it);
 
         return -1;
@@ -64,22 +61,16 @@ int PoolSQLCache::get(int oid, PoolObjectSQL ** object, bool olock)
         {
             (*object)->lock();
         }
+
+        if ( (*object)->is_deleted() )
+        {
+            delete_cache_line(it);
+
+            *object = 0;
+        }
     }
 
     return 0;
-}
-
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
-void PoolSQLCache::set_deleted(int oid)
-{
-    std::map<int, CacheLine *>::iterator it = cache.find(oid);
-
-    if ( it != cache.end() )
-    {
-        it->second->deleted = true;
-    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -138,25 +129,6 @@ void PoolSQLCache::disable()
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-void PoolSQLCache::delete_cache_line(std::map<int, CacheLine *>::iterator& it)
-{
-    PoolObjectSQL * object = it->second->object;
-
-    if ( object != 0 )
-    {
-        object->lock();
-    }
-
-    delete object;
-
-    delete it->second;
-
-    cache.erase(it);
-}
-
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
 void PoolSQLCache::flush_cache_lines()
 {
     std::map<int, CacheLine *>::iterator it;
@@ -181,11 +153,7 @@ void PoolSQLCache::flush_cache_lines()
             continue;
         }
 
-        delete it->second->object;
-
-        delete it->second;
-
-        it = cache.erase(it);
+        it = delete_cache_line(it);
     }
 };
 
@@ -220,11 +188,7 @@ void PoolSQLCache::delete_cache_block(int block_size)
             }
             else
             {
-                delete it->second->object;
-
-                delete it->second;
-
-                cache.erase(it);
+                delete_cache_line(it);
 
                 ++deleted;
             }

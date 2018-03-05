@@ -179,7 +179,7 @@ int PoolObjectSQL::drop(SqlDB *db)
 
     if ( rc == 0 )
     {
-        set_valid(false);
+        set_deleted();
     }
 
     return rc;

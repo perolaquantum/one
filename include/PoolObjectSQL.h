@@ -140,7 +140,6 @@ public:
              gid(_gid),
              uname(_uname),
              gname(_gname),
-             valid(true),
              owner_u(1),
              owner_m(1),
              owner_a(0),
@@ -155,7 +154,8 @@ public:
              lock_owner(-1),
              lock_req_id(-1),
              lock_time(0),
-             table(_table)
+             table(_table),
+             deleted(false)
     {
         pthread_mutex_init(&mutex,0);
     };
@@ -297,22 +297,17 @@ public:
     /* --------------------------------------------------------------------- */
 
     /**
-     *  Check if the object is valid
-     *    @return true if object is valid
+     *  Functions to test and set the deleted flag
      */
-    const bool& isValid() const
+    bool is_deleted()
     {
-       return valid;
-    };
+        return deleted;
+    }
 
-    /**
-     *  Set the object valid flag
-     *  @param _valid new valid flag
-     */
-    void set_valid(const bool _valid)
+    void set_deleted()
     {
-        valid = _valid;
-    };
+        deleted = true;
+    }
 
     /**
      *  Function to lock the object
@@ -330,7 +325,7 @@ public:
         pthread_mutex_unlock(&mutex);
     };
 
-    /*+
+    /**
      *  Try to lock the object
      *    @return 0 on success or error_code
      */
@@ -571,7 +566,8 @@ public:
      *
      * @param owner String to identify who requested the lock
      */
-    LockStates get_lock_state(){
+    LockStates get_lock_state()
+    {
         return locked;
     }
 
@@ -753,11 +749,6 @@ protected:
     string  gname;
 
     /**
-     *  The contents of this object are valid
-     */
-    bool    valid;
-
-    /**
      *  Permissions for the owner user
      */
     int     owner_u;
@@ -829,6 +820,12 @@ private:
      *  Pointer to the SQL table for the PoolObjectSQL
      */
     const char * table;
+
+    /**
+     *  The object has been deleted from the DB. This flag is used to manage
+     *  the object cache.
+     */
+    bool    deleted;
 };
 
 #endif /*POOL_OBJECT_SQL_H_*/

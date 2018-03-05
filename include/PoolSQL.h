@@ -143,7 +143,6 @@ public:
      */
     virtual int drop(PoolObjectSQL * objsql, string& error_msg)
     {
-        int oid = objsql->get_oid();
         int rc  = objsql->drop(db);
 
         if ( rc != 0 )
@@ -155,10 +154,6 @@ public:
         {
             do_hooks(objsql, Hook::REMOVE);
         }
-
-        lock();
-
-        cache.set_deleted(oid);
 
         return 0;
     };

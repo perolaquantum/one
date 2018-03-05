@@ -59,12 +59,6 @@ public:
     void insert(PoolObjectSQL * object);
 
     /**
-     *  Set the deleted flag for the cache line
-     *    @param oid of object
-     */
-    void set_deleted(int oid);
-
-    /**
      *  Disable Cache. Flush cache lines, disable objects in use and update
      *  cache state
      */
@@ -78,17 +72,12 @@ public:
 private:
     struct CacheLine
     {
-        CacheLine(PoolObjectSQL * o):dirty(false), deleted(false), object(o){};
+        CacheLine(PoolObjectSQL * o):dirty(false), object(o){};
 
         /**
          *  Object has been modified and needs to be reloaded from DB
          */
         bool dirty;
-
-        /**
-         *  Object has been delected and no longer exists
-         */
-        bool deleted;
 
         /**
          *  Reference to the object
@@ -117,10 +106,21 @@ private:
     std::map<int, CacheLine *> cache;
 
     /**
-     *  Deletes a line from the cache
+     *  Deletes a line from the cache, it assumes that the object is locked
      *    @param it pointing to the line
+     *    @param lock the object before deleting it
+     *
+     *    @return iterator to the next line
      */
-    void delete_cache_line(std::map<int, CacheLine *>::iterator& it);
+    std::map<int, CacheLine *>::iterator delete_cache_line(
+            std::map<int, CacheLine *>::iterator& it)
+    {
+        delete it->second->object;
+
+        delete it->second;
+
+        return cache.erase(it);
+    }
 
     /**
      *  Deletes all cache lines if they are not in use.
