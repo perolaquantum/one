@@ -26,7 +26,7 @@
 #define YY_NO_INPUT
 
 #define YY_DECL int template_lex (YYSTYPE *lvalp, YYLTYPE *llocp, \
-                                  mem_collector *mc)
+                                  mem_collector *mc, yyscan_t yyscanner)
 
 #define YY_USER_ACTION  llocp->first_line = yylineno;   \
                         llocp->first_column = llocp->last_column;   \
@@ -37,6 +37,7 @@
 %option prefix="template_"
 %option outfile="template_parser.c"
 %option yylineno
+%option reentrant
 
 %x VALUE
 
@@ -88,7 +89,7 @@ CDATA "\]\]\>"
                     BEGIN(INITIAL); return STRING;}
 %%
 
-int template_wrap()
+int template_wrap(yyscan_t scanner)
 {
     return 1;
 }

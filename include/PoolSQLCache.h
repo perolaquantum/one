@@ -20,6 +20,7 @@
 #include <map>
 #include <string>
 #include <queue>
+#include <pthread.h>
 
 #include "PoolObjectSQL.h"
 
@@ -56,7 +57,7 @@ public:
      *
      *  @param obejct to be inserted int the cache
      */
-    void insert(PoolObjectSQL * object);
+    int set_line(int oid, PoolObjectSQL * object);
 
     /**
      *  Disable Cache. Flush cache lines, disable objects in use and update
@@ -70,9 +71,34 @@ public:
     void enable();
 
 private:
+
+    pthread_mutex_t mutex;
+
+    void lock() { pthread_mutex_lock(&mutex); };
+
+    void unlock() { pthread_mutex_unlock(&mutex); };
+
     struct CacheLine
     {
-        CacheLine(PoolObjectSQL * o):dirty(false), object(o){};
+        CacheLine(PoolObjectSQL * o):dirty(false), object(o)
+        {
+            pthread_mutex_init(&mutex, 0);
+        };
+
+        void lock()
+        {
+            pthread_mutex_lock(&mutex);
+        }
+
+        void unlock()
+        {
+            pthread_mutex_unlock(&mutex);
+        }
+
+        /**
+         *
+         */
+        pthread_mutex_t mutex;
 
         /**
          *  Object has been modified and needs to be reloaded from DB

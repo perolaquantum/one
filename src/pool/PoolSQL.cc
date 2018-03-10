@@ -194,9 +194,9 @@ PoolObjectSQL * PoolSQL::get(int oid, bool olock)
 
     if ( rc != 0 )
     {
-        objectsql->lock();
-
         delete objectsql;
+
+        cache.set_line(oid, 0);
 
         unlock();
 
@@ -208,7 +208,14 @@ PoolObjectSQL * PoolSQL::get(int oid, bool olock)
         objectsql->lock();
     }
 
-    cache.insert(objectsql);
+    rc = cache.set_line(oid, objectsql);
+
+    if ( rc == -1 )
+    {
+        delete objectsql;
+
+        objectsql = 0;
+    }
 
     unlock();
 
