@@ -40,23 +40,20 @@ extern "C"
         mem_collector * mc,
         Template *      tmpl,
         char **         error_msg,
-        yyscan_t        scanner,
         const char *    str);
 
-    int template__lex (YYSTYPE *lvalp, YYLTYPE *llocp, mem_collector * mc,
-yyscan_t scanner);
+    int template__lex (YYSTYPE *lvalp, YYLTYPE *llocp, mem_collector * mc);
 
-    int template__parse(mem_collector * mc, Template * tmpl, char ** errmsg,
-    yyscan_t scanner);
+    int template__parse(mem_collector * mc, Template * tmpl, char ** errmsg);
 
-    int template_parse(Template * tmpl, char ** errmsg, yyscan_t scanner)
+    int template_parse(Template * tmpl, char ** errmsg)
     {
         mem_collector mc;
         int           rc;
 
         mem_collector_init(&mc);
 
-        rc = template__parse(&mc, tmpl, errmsg, scanner);
+        rc = template__parse(&mc, tmpl, errmsg);
 
         mem_collector_cleanup(&mc);
 
@@ -68,17 +65,11 @@ yyscan_t scanner);
 
 %}
 
-%code requires {
-typedef void * yyscan_t;
-}
-
 %parse-param {mem_collector * mc}
 %parse-param {Template *      tmpl}
 %parse-param {char **         error_msg}
-%parse-param {yyscan_t scanner}
 
 %lex-param {mem_collector * mc}
-%lex-param {yyscan_t scanner}
 
 %union {
     char * val_str;
@@ -202,7 +193,6 @@ extern "C" void template__error(
     mem_collector * mc,
     Template *      tmpl,
     char **         error_msg,
-    yyscan_t        scanner,
     const char *    str)
 {
     int length;

@@ -43,27 +43,17 @@ pthread_mutex_t Template::mutex = PTHREAD_MUTEX_INITIALIZER;
 
 extern "C"
 {
-#define YY_BUF_SIZE 32768
-
-    typedef void * yyscan_t;
-
     typedef struct yy_buffer_state * YY_BUFFER_STATE;
 
-    void template_set_in(FILE * _in_str , yyscan_t yyscanner );
+    extern FILE *template_in, *template_out;
 
-    int template_parse(Template * tmpl, char ** errmsg, yyscan_t scanner);
+    int template_parse(Template * tmpl, char ** errmsg);
 
-    int template_lex_init(yyscan_t *scanner);
+    int template_lex_destroy();
 
-    int template_lex_destroy(yyscan_t scanner);
+    YY_BUFFER_STATE template__scan_string(const char * str);
 
-    YY_BUFFER_STATE template__create_buffer(FILE * file, int size, yyscan_t scanner);
-
-    void template__switch_to_buffer(YY_BUFFER_STATE buffer, yyscan_t scanner);
-
-    YY_BUFFER_STATE template__scan_string(const char * str, yyscan_t scanner);
-
-    void template__delete_buffer(YY_BUFFER_STATE, yyscan_t scanner);
+    void template__delete_buffer(YY_BUFFER_STATE);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -72,34 +62,23 @@ extern "C"
 int Template::parse(const char * filename, char **error_msg)
 {
     int     rc;
-    yyscan_t scanner = 0;
-
-    YY_BUFFER_STATE     file_buffer = 0;
 
     pthread_mutex_lock(&mutex);
 
-    template_lex_init(&scanner);
-
     *error_msg = 0;
 
-    FILE * template_in = fopen(filename, "r");
+    template_in = fopen (filename, "r");
 
     if ( template_in == 0 )
     {
         goto error_open;
     }
 
-    file_buffer = template__create_buffer(template_in, YY_BUF_SIZE, scanner);
-
-    template__switch_to_buffer(file_buffer, scanner);
-
-    rc = template_parse(this,error_msg,scanner);
+    rc = template_parse(this,error_msg);
 
     fclose(template_in);
 
-    template__delete_buffer(file_buffer, scanner);
-
-    template_lex_destroy(scanner);
+    template_lex_destroy();
 
     pthread_mutex_unlock(&mutex);
 
@@ -121,28 +100,25 @@ int Template::parse(const string &parse_str, char **error_msg)
     YY_BUFFER_STATE     str_buffer = 0;
     const char *        str;
     int                 rc;
-    yyscan_t scanner = 0;
 
     pthread_mutex_lock(&mutex);
-
-    template_lex_init(&scanner);
 
     *error_msg = 0;
 
     str = parse_str.c_str();
 
-    str_buffer = template__scan_string(str, scanner);
+    str_buffer = template__scan_string(str);
 
     if (str_buffer == 0)
     {
         goto error_yy;
     }
 
-    rc = template_parse(this,error_msg,scanner);
+    rc = template_parse(this,error_msg);
 
-    template__delete_buffer(str_buffer, scanner);
+    template__delete_buffer(str_buffer);
 
-    template_lex_destroy(scanner);
+    template_lex_destroy();
 
     pthread_mutex_unlock(&mutex);
 

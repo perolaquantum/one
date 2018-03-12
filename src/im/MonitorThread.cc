@@ -20,8 +20,6 @@
 #include <map>
 #include <set>
 
-#include <math.h>
-
 #include "Nebula.h"
 #include "NebulaUtil.h"
 
@@ -49,29 +47,6 @@ time_t MonitorThread::monitor_interval;
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-static void timestamp(int start_timer, const char * message,
-        struct timespec * estart, struct timespec * eend)
-{
-    double t;
-
-    if ( start_timer )
-    {
-        clock_gettime(CLOCK_MONOTONIC, estart);
-
-        return;
-    }
-
-    clock_gettime(CLOCK_MONOTONIC, eend);
-
-    t = (eend->tv_sec + (eend->tv_nsec * pow(10,-9))) -
-        (estart->tv_sec+(estart->tv_nsec*pow(10,-9)));
-
-    ostringstream oss;
-
-    oss << message << ": " << one_util::float_to_str(t) << "s";
-    NebulaLog::log("-----", Log::DEBUG, oss);
-}
-
 extern "C" void * do_message_thread(void *arg)
 {
     MonitorThread * mt = static_cast<MonitorThread *>(arg);
@@ -90,12 +65,6 @@ extern "C" void * do_message_thread(void *arg)
 
 void MonitorThread::do_message()
 {
-    struct timespec estart, eend;
-    struct timespec estartt, eendt;
-
-    timestamp(true,"", &estartt, &eendt);
-
-    timestamp(true,"", &estart, &eend);
     // -------------------------------------------------------------------------
     // Decode from base64, check if it is compressed
     // -------------------------------------------------------------------------
@@ -108,10 +77,6 @@ void MonitorThread::do_message()
 
         hinfo = zinfo;
     }
-
-    timestamp(false, "Step 0. Parse.", &estart, &eend);
-
-    timestamp(true,"", &estart, &eend);
 
     Host* host = hpool->get(host_id,true);
 
@@ -176,8 +141,6 @@ void MonitorThread::do_message()
 
     host->unlock();
 
-    timestamp(false, "Step 1. Host.", &estart, &eend);
-
     if (rc != 0)
     {
         return;
@@ -185,8 +148,6 @@ void MonitorThread::do_message()
 
     if (cid != -1)
     {
-        timestamp(true , "", &estart, &eend);
-
         Cluster *cluster = cpool->get(cid, true);
 
         if (cluster != 0)
@@ -195,11 +156,7 @@ void MonitorThread::do_message()
 
             cluster->unlock();
         }
-
-        timestamp(false , "Step 2. Cluster", &estart, &eend);
     }
-
-    timestamp(true , "", &estart, &eend);
 
     for (itm = datastores.begin(); itm != datastores.end(); itm++)
     {
@@ -218,8 +175,6 @@ void MonitorThread::do_message()
         ds->unlock();
     }
 
-    timestamp(false , "Step 3. Datastore", &estart, &eend);
-
     // -------------------------------------------------------------------------
     // Parse Host information
     // -------------------------------------------------------------------------
@@ -230,8 +185,6 @@ void MonitorThread::do_message()
     set<int>        rediscovered_vms;
 
     ostringstream   oss;
-
-    timestamp(true , "", &estart, &eend);
 
     host = hpool->get(host_id,true);
 
@@ -263,8 +216,6 @@ void MonitorThread::do_message()
 
     host->unlock();
 
-    timestamp(false, "Step 4. Update Host", &estart, &eend);
-
     //--------------------------------------------------------------------------
     // Process VM information if any. VMs not reported by the hypervisor are
     // moved to the POWEROFF state.
@@ -273,8 +224,6 @@ void MonitorThread::do_message()
     {
         set<int>::iterator         its;
         map<int,string>::iterator  itm;
-
-        timestamp(true , "", &estart, &eend);
 
         for (its = lost.begin(); its != lost.end(); its++)
         {
@@ -312,10 +261,6 @@ void MonitorThread::do_message()
             vm->unlock();
         }
 
-        timestamp(false , "Step 5. Lost VM", &estart, &eend);
-
-        timestamp(true , "", &estart, &eend);
-
         for (itm = found.begin(); itm != found.end(); itm++)
         {
             VirtualMachine * vm = vmpool->get(itm->first, true);
@@ -342,10 +287,6 @@ void MonitorThread::do_message()
             vm->unlock();
         }
 
-        timestamp(false , "Step 6. Found VM", &estart, &eend);
-
-        timestamp(true , "", &estart, &eend);
-
         // The rediscovered set is not stored in the DB, the update method
         // is not needed
         host = hpool->get(host_id,true);
@@ -356,11 +297,7 @@ void MonitorThread::do_message()
 
             host->unlock();
         }
-
-        timestamp(false , "Step 7. Host ", &estart, &eend);
     }
-
-    timestamp(false , "TOTAL", &estartt, &eendt);
 };
 
 /* -------------------------------------------------------------------------- */

@@ -16,13 +16,10 @@
 
 #include "PoolSQLCache.h"
 #include "Nebula.h"
-#include <pthread.h>
 
 PoolSQLCache::PoolSQLCache(bool oa):only_active(oa)
 {
     Nebula&  nd = Nebula::instance();
-
-    pthread_mutex_init(&mutex, 0);
 
     if (only_active)
     {
@@ -39,59 +36,18 @@ PoolSQLCache::PoolSQLCache(bool oa):only_active(oa)
 
 int PoolSQLCache::get(int oid, PoolObjectSQL ** object, bool olock)
 {
-    std::map<int, CacheLine *>::iterator it;
-
-    CacheLine * cl;
-
-    lock();
-
-    it = cache.find(oid);
+    std::map<int, CacheLine *>::iterator it = cache.find(oid);
 
     if ( it == cache.end() )
     {
-        cl = new CacheLine(0);
-
-        cl->lock();
-
-        cache.insert(make_pair(oid, cl));
-
-        unlock();
-
         return -1;
     }
-
-    cl = it->second;
-
-    unlock();
-
-    if ( cl->dirty || only_active )
-    {
-        cl->lock();
-
-        if ( cl->object != 0 )
-        {
-            cl->object->lock();
-        }
-
-        delete cl->object;
-
-        return -1;
-    }
-
-/*
-
-
-
     else if ( it->second->dirty || only_active )
     {
         if ( it->second->object != 0 )
         {
-            pthread_mutex_unlock(mutex);
-
             it->second->object->lock();
         }
-
-        pthread_mutex_lock(mutex);
 
         delete_cache_line(it);
 
@@ -113,37 +69,15 @@ int PoolSQLCache::get(int oid, PoolObjectSQL ** object, bool olock)
             *object = 0;
         }
     }
-*/
+
     return 0;
 }
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int PoolSQLCache::set_line(int oid, PoolObjectSQL * object)
+void PoolSQLCache::insert(PoolObjectSQL * object)
 {
-    lock();
-
-    std::map<int, CacheLine *>::iterator it = cache.find(oid);
-
-    if ( it == cache.end() )
-    {
-        unlock();
-
-        return -1;
-    }
-
-    CacheLine * cl = it->second;
-
-    unlock();
-
-    cl->object = object;
-
-    cl->unlock();
-
-    return 0;
-
-    /*
     CacheLine *  cl = new CacheLine(object);
     unsigned int cs = cache.size();
 
@@ -162,7 +96,6 @@ int PoolSQLCache::set_line(int oid, PoolObjectSQL * object)
     cache.insert(make_pair(object->get_oid(), cl));
 
     fifo.push(object->get_oid());
-    */
 };
 
 /* -------------------------------------------------------------------------- */

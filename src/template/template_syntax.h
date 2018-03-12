@@ -39,12 +39,6 @@
 #if YYDEBUG
 extern int template__debug;
 #endif
-/* "%code requires" blocks.  */
-#line 71 "template_syntax.y" /* yacc.c:1909  */
-
-typedef void * yyscan_t;
-
-#line 48 "template_syntax.hh" /* yacc.c:1909  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
@@ -67,12 +61,12 @@ typedef void * yyscan_t;
 
 union YYSTYPE
 {
-#line 83 "template_syntax.y" /* yacc.c:1909  */
+#line 74 "template_syntax.y" /* yacc.c:1909  */
 
     char * val_str;
     void * val_attr;
 
-#line 76 "template_syntax.hh" /* yacc.c:1909  */
+#line 70 "template_syntax.hh" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
