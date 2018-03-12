@@ -33,7 +33,7 @@ using namespace std;
  * multithreaded applications. Any modification or access function to the pool
  * SHOULD block the mutex.
  */
-class PoolSQL: public Callbackable, public Hookable
+class PoolSQL: public Hookable
 {
 public:
     /**
@@ -44,7 +44,7 @@ public:
      *   @param _table the name of the table supporting the pool (to set the oid
      *   counter). If null the OID counter is not updated.
      */
-    PoolSQL(SqlDB * _db, const char * _table, bool only_active = true);
+    PoolSQL(SqlDB * _db, const char * _table);
 
     virtual ~PoolSQL();
 
@@ -370,22 +370,6 @@ private:
     {
         pthread_mutex_unlock(&mutex);
     };
-
-    /* ---------------------------------------------------------------------- */
-    /* ---------------------------------------------------------------------- */
-    /**
-     *  Callback to store the IDs of pool objects (PoolSQL::search)
-     */
-    int  search_cb(void *_oids, int num, char **values, char **names);
-
-    /**
-     *  Callback function to get output in XML format
-     *    @param num the number of columns read from the DB
-     *    @param names the column names
-     *    @param vaues the column values
-     *    @return 0 on success
-     */
-    int dump_cb(void * _oss, int num, char **values, char **names);
 };
 
 #endif /*POOL_SQL_H_*/

@@ -20,6 +20,7 @@
 #include <map>
 #include <string>
 #include <queue>
+#include <pthread.h>
 
 #include "PoolObjectSQL.h"
 
@@ -33,51 +34,75 @@ class PoolSQLCache
 {
 public:
 
-    PoolSQLCache(bool only_active);
+    PoolSQLCache();
 
-    virtual ~PoolSQLCache(){};
+    virtual ~PoolSQLCache()
+    {
+        pthread_mutex_destroy(&mutex);
+    };
 
     /**
-     *  Gets an object from the cache:
+     *  Allocates a new cache line to hold an active pool object. If the line
+     *  does not exist it is created. Any active reference is deallocated to
+     *  load a fresh copy of the object.
+     *
+     *  The cache line is locked to sync access to the given object.
      *
      *  @param oid of the object
-     *  @param object pointer to the object it can be 0 if the object was deleted
-     *  @param olock to lock the object mutex
+     */
+    void lock_line(int oid);
+
+    /**
+     *  Sets the reference of the active object and unlocks the cache line. The
+     *  mutex of the object MUST be locked
      *
-     *  @return 0, object found and valid. If -1 is returned the object was not
-     *  found or it was invalid and needs to be reloaded from the DB.
-     */
-    int get(int oid, PoolObjectSQL ** object, bool olock);
-
-    /**
-     *  Insert a new element in the cache. This method updates the FIFO for the
-     *  replacement policy and replace elements if needed. This method MUST be
-     *  called as a failure on get object without unlocking the cache mutex.
+     *  @param oid of the object
+     *  @param object to be inserted int the cache
      *
-     *  @param obejct to be inserted int the cache
+     *  @return 0 on success
+     *
      */
-    void insert(PoolObjectSQL * object);
-
-    /**
-     *  Disable Cache. Flush cache lines, disable objects in use and update
-     *  cache state
-     */
-    void disable();
-
-    /**
-     *  Activate Cache.
-     */
-    void enable();
+    int set_line(int oid, PoolObjectSQL * object);
 
 private:
     struct CacheLine
     {
-        CacheLine(PoolObjectSQL * o):dirty(false), object(o){};
+        CacheLine(PoolObjectSQL * o):in_use(false), object(o)
+        {
+            pthread_mutex_init(&mutex, 0);
+        };
+
+        ~CacheLine()
+        {
+            delete object;
+
+            pthread_mutex_destroy(&mutex);
+        }
+
+        void lock()
+        {
+            pthread_mutex_lock(&mutex);
+        };
+
+        void unlock()
+        {
+            pthread_mutex_unlock(&mutex);
+        }
+
+        int trylock()
+        {
+            return pthread_mutex_trylock(&mutex);
+        }
 
         /**
-         *  Object has been modified and needs to be reloaded from DB
+         *
          */
-        bool dirty;
+        pthread_mutex_t mutex;
+
+        /**
+         *  Cache line is in use and cannot be removed
+         */
+        bool in_use;
 
         /**
          *  Reference to the object
@@ -86,19 +111,9 @@ private:
     };
 
     /**
-     *  Max number of elements in the cache.
+     *  Max number of active references in the cache.
      */
     unsigned int max_elements;
-
-    /**
-     *  When set to true only active references are kept in the cache
-     */
-    bool only_active;
-
-    /**
-     *  Fifo queue to implement cache replacement policy
-     */
-    std::queue<int> fifo;
 
     /**
      *  Cache of pool objects indexed by their oid
@@ -106,33 +121,24 @@ private:
     std::map<int, CacheLine *> cache;
 
     /**
-     *  Deletes a line from the cache, it assumes that the object is locked
-     *    @param it pointing to the line
-     *    @param lock the object before deleting it
-     *
-     *    @return iterator to the next line
-     */
-    std::map<int, CacheLine *>::iterator delete_cache_line(
-            std::map<int, CacheLine *>::iterator& it)
-    {
-        delete it->second->object;
-
-        delete it->second;
-
-        return cache.erase(it);
-    }
-
-    /**
      *  Deletes all cache lines if they are not in use.
      */
     void flush_cache_lines();
 
     /**
-     *  Deletes a set of cache lines. The lines are removed for objects in
-     *  a FIFO fashion.
-     *    @param block_size number of lines to delete
+     *  Controls concurrent access to the cache map.
      */
-    void delete_cache_block(int block_size);
+    pthread_mutex_t mutex;
+
+    void lock()
+    {
+        pthread_mutex_lock(&mutex);
+    };
+
+    void unlock()
+    {
+        pthread_mutex_unlock(&mutex);
+    }
 };
 
 #endif /*POOL_SQL_CACHE_H_*/

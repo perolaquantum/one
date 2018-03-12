@@ -235,11 +235,6 @@ private:
     {
         return new Cluster(-1,"",0, &vnc_conf);
     };
-
-
-    int get_clusters_cb(
-            void * _cluster_ids, int num, char **values, char **names);
-
 };
 
 #endif /*CLUSTER_POOL_H_*/

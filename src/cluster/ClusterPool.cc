@@ -219,15 +219,16 @@ void ClusterPool::cluster_acl_filter(ostringstream& filter,
 int ClusterPool::query_datastore_clusters(int oid, set<int> &cluster_ids)
 {
     ostringstream oss;
+    set_cb<int>   cb;
 
-    set_callback(static_cast<Callbackable::Callback>(&ClusterPool::get_clusters_cb),
-                 static_cast<void *>(&cluster_ids));
+    cb.set_callback(&cluster_ids);
 
-    oss << "SELECT cid FROM " << Cluster::datastore_table << " WHERE oid = " << oid;
+    oss << "SELECT cid FROM " << Cluster::datastore_table << " WHERE oid = "
+        << oid;
 
-    int rc = db->exec_rd(oss, this);
+    int rc = db->exec_rd(oss, &cb);
 
-    unset_callback();
+    cb.unset_callback();
 
     if ( rc != 0 )
     {
@@ -243,15 +244,15 @@ int ClusterPool::query_datastore_clusters(int oid, set<int> &cluster_ids)
 int ClusterPool::query_vnet_clusters(int oid, set<int> &cluster_ids)
 {
     ostringstream oss;
+    set_cb<int>   cb;
 
-    set_callback(static_cast<Callbackable::Callback>(&ClusterPool::get_clusters_cb),
-                 static_cast<void *>(&cluster_ids));
+    cb.set_callback(&cluster_ids);
 
-    oss << "SELECT cid FROM " << Cluster::network_table << " WHERE oid = " << oid;
+    oss << "SELECT cid FROM " << Cluster::network_table << " WHERE oid = "<<oid;
 
-    int rc = db->exec_rd(oss, this);
+    int rc = db->exec_rd(oss, &cb);
 
-    unset_callback();
+    cb.unset_callback();
 
     if ( rc != 0 )
     {
@@ -263,17 +264,3 @@ int ClusterPool::query_vnet_clusters(int oid, set<int> &cluster_ids)
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-
-int ClusterPool::get_clusters_cb(
-        void * _cluster_ids, int num, char **values, char **names)
-{
-    if ( num == 0 || values == 0 || values[0] == 0 )
-    {
-        return -1;
-    }
-
-    int cluster_id = atoi(values[0]);
-    static_cast<set<int>*>(_cluster_ids)->insert(cluster_id);
-
-    return 0;
-}

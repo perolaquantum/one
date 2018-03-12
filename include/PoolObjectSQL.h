@@ -154,8 +154,7 @@ public:
              lock_owner(-1),
              lock_req_id(-1),
              lock_time(0),
-             table(_table),
-             deleted(false)
+             table(_table)
     {
         pthread_mutex_init(&mutex,0);
     };
@@ -297,19 +296,6 @@ public:
     /* --------------------------------------------------------------------- */
 
     /**
-     *  Functions to test and set the deleted flag
-     */
-    bool is_deleted()
-    {
-        return deleted;
-    }
-
-    void set_deleted()
-    {
-        deleted = true;
-    }
-
-    /**
      *  Function to lock the object
      */
     void lock()
@@ -329,7 +315,7 @@ public:
      *  Try to lock the object
      *    @return 0 on success or error_code
      */
-    int try_lock()
+    int trylock()
     {
         return pthread_mutex_trylock(&mutex);
     };
@@ -820,12 +806,6 @@ private:
      *  Pointer to the SQL table for the PoolObjectSQL
      */
     const char * table;
-
-    /**
-     *  The object has been deleted from the DB. This flag is used to manage
-     *  the object cache.
-     */
-    bool    deleted;
 };
 
 #endif /*POOL_OBJECT_SQL_H_*/

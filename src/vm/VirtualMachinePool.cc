@@ -516,36 +516,22 @@ int VirtualMachinePool::dump_monitoring(
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int VirtualMachinePool::db_int_cb(void * _int_output, int num, char **values, char **names)
-{
-    if ( num == 0 || values == 0 || values[0] == 0 )
-    {
-        return -1;
-    }
-
-    *static_cast<int*>(_int_output) = atoi(values[0]);
-
-    return 0;
-}
-
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
 int VirtualMachinePool::get_vmid (const string& deploy_id)
 {
     int rc;
     int vmid = -1;
     ostringstream oss;
 
-    set_callback(static_cast<Callbackable::Callback>(&VirtualMachinePool::db_int_cb),
-                 static_cast<void *>(&vmid));
+    single_cb<int> cb;
+
+    cb.set_callback(&vmid);
 
     oss << "SELECT vmid FROM " << import_table
         << " WHERE deploy_id = '" << db->escape_str(deploy_id.c_str()) << "'";
 
-    rc = db->exec_rd(oss, this);
+    rc = db->exec_rd(oss, &cb);
 
-    unset_callback();
+    cb.unset_callback();
 
     if (rc != 0 )
     {
@@ -690,15 +676,15 @@ int VirtualMachinePool::calculate_showback(
     else
     {
         // Set start time to the lowest stime from the history records
+        single_cb<time_t> cb;
 
-        set_callback(static_cast<Callbackable::Callback>(&VirtualMachinePool::db_int_cb),
-                     static_cast<void *>(&start_time));
+        cb.set_callback(&start_time);
 
         oss << "SELECT MIN(stime) FROM " << History::table;
 
-        rc = db->exec_rd(oss, this);
+        rc = db->exec_rd(oss, &cb);
 
-        unset_callback();
+        cb.unset_callback();
     }
 
     if (end_month != -1 && end_year != -1)

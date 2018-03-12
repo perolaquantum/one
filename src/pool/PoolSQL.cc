@@ -87,8 +87,7 @@ void PoolSQL::set_lastOID(int _last_oid)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-PoolSQL::PoolSQL(SqlDB * _db, const char * _table, bool only_active):
-    db(_db), table(_table), cache(only_active)
+PoolSQL::PoolSQL(SqlDB * _db, const char * _table):db(_db), table(_table)
 {
     pthread_mutex_init(&mutex,0);
 };
@@ -101,10 +100,6 @@ PoolSQL::~PoolSQL()
     vector<PoolObjectSQL *>::iterator it;
 
     pthread_mutex_lock(&mutex);
-
-    cache.disable();
-
-    pthread_mutex_unlock(&mutex);
 
     pthread_mutex_destroy(&mutex);
 }
@@ -173,32 +168,21 @@ PoolObjectSQL * PoolSQL::get(int oid, bool olock)
         return 0;
     }
 
-    lock();
-
     PoolObjectSQL * objectsql;
 
-    int rc = cache.get(oid, &objectsql, olock);
-
-    if ( rc == 0 )
-    {
-        unlock();
-
-        return objectsql;
-    }
+    cache.lock_line(oid);
 
     objectsql = create();
 
     objectsql->oid = oid;
 
-    rc = objectsql->select(db);
+    int rc = objectsql->select(db);
 
     if ( rc != 0 )
     {
-        objectsql->lock();
-
         delete objectsql;
 
-        unlock();
+        cache.set_line(oid, 0);
 
         return 0;
     }
@@ -208,9 +192,7 @@ PoolObjectSQL * PoolSQL::get(int oid, bool olock)
         objectsql->lock();
     }
 
-    cache.insert(objectsql);
-
-    unlock();
+    cache.set_line(oid, objectsql);
 
     return objectsql;
 }
@@ -232,23 +214,6 @@ PoolObjectSQL * PoolSQL::get(const string& name, int ouid, bool olock)
 }
 
 /* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
-int PoolSQL::dump_cb(void * _oss, int num, char **values, char **names)
-{
-    ostringstream * oss;
-
-    oss = static_cast<ostringstream *>(_oss);
-
-    if ( (!values[0]) || (num != 1) )
-    {
-        return -1;
-    }
-
-    *oss << values[0];
-    return 0;
-}
-
 /* -------------------------------------------------------------------------- */
 
 int PoolSQL::dump(ostringstream& oss, const string& elem_name, const char* table,
@@ -281,41 +246,24 @@ int PoolSQL::dump(ostringstream& oss, const string& root_elem_name,
 {
     int rc;
 
+    stream_cb cb(1);
+
     oss << "<" << root_elem_name << ">";
 
-    set_callback(static_cast<Callbackable::Callback>(&PoolSQL::dump_cb),
-                 static_cast<void *>(&oss));
+    cb.set_callback(&oss);
 
-    rc = db->exec_rd(sql_query, this);
+    rc = db->exec_rd(sql_query, &cb);
 
     add_extra_xml(oss);
 
     oss << "</" << root_elem_name << ">";
 
-    unset_callback();
+    cb.unset_callback();
 
     return rc;
 }
 
 /* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
-int PoolSQL:: search_cb(void * _oids, int num, char **values, char **names)
-{
-    vector<int> *  oids;
-
-    oids = static_cast<vector<int> *>(_oids);
-
-    if ( num == 0 || values == 0 || values[0] == 0 )
-    {
-        return -1;
-    }
-
-    oids->push_back(atoi(values[0]));
-
-    return 0;
-}
-
 /* -------------------------------------------------------------------------- */
 
 int PoolSQL::search(
@@ -326,8 +274,9 @@ int PoolSQL::search(
     ostringstream   sql;
     int             rc;
 
-    set_callback(static_cast<Callbackable::Callback>(&PoolSQL::search_cb),
-                 static_cast<void *>(&oids));
+    vector_cb<int> cb;
+
+    cb.set_callback(&oids);
 
     sql  << "SELECT oid FROM " <<  table;
 
@@ -336,9 +285,9 @@ int PoolSQL::search(
         sql << " WHERE " << where;
     }
 
-    rc = db->exec_rd(sql, this);
+    rc = db->exec_rd(sql, &cb);
 
-    unset_callback();
+    cb.unset_callback();
 
     return rc;
 }

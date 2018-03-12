@@ -283,18 +283,6 @@ private:
     {
         return new User(-1,-1,"","","",UserPool::CORE_AUTH,true);
     };
-
-    //--------------------------------------------------------------------------
-    //--------------------------------------------------------------------------
-
-    /**
-     *  Callback function to  output in XML format
-     *    @param num the number of columns read from the DB
-     *    @param names the column names
-     *    @param vaues the column values
-     *    @return 0 on success
-     */
-    int dump_cb(void * _oss, int num, char **values, char **names);
 };
 
 #endif /*USER_POOL_H_*/

@@ -21,7 +21,7 @@
  * Doc: http://dev.mysql.com/doc/refman/5.5/en/c-api-function-overview.html
  ********/
 
-const int MySqlDB::DB_CONNECT_SIZE = 10;
+const int MySqlDB::DB_CONNECT_SIZE = 100;
 
 /* -------------------------------------------------------------------------- */
 

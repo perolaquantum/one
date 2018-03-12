@@ -219,46 +219,23 @@ error_common:
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int HostPool::discover_cb(void * _set, int num, char **values, char **names)
-{
-    set<int> *  discovered_hosts;
-    string      im_mad;
-    int         hid;
-
-    discovered_hosts = static_cast<set<int> *>(_set);
-
-    if ( (num<1) || (values[0] == 0) )
-    {
-        return -1;
-    }
-
-    hid = atoi(values[0]);
-
-    discovered_hosts->insert(hid);
-
-    return 0;
-}
-
-/* -------------------------------------------------------------------------- */
-
 int HostPool::discover(
         set<int> *  discovered_hosts,
         int         host_limit,
         time_t      target_time)
 {
-    ostringstream   sql;
-    int             rc;
+    ostringstream sql;
+    set_cb<int>   cb;
 
-    set_callback(static_cast<Callbackable::Callback>(&HostPool::discover_cb),
-                 static_cast<void *>(discovered_hosts));
+    cb.set_callback(discovered_hosts);
 
     sql << "SELECT oid FROM " << Host::table
         << " WHERE last_mon_time <= " << target_time
         << " ORDER BY last_mon_time ASC LIMIT " << host_limit;
 
-    rc = db->exec_rd(sql,this);
+    int rc = db->exec_rd(sql, &cb);
 
-    unset_callback();
+    cb.unset_callback();
 
     return rc;
 }

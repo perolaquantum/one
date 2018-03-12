@@ -177,11 +177,6 @@ int PoolObjectSQL::drop(SqlDB *db)
 
     rc = db->exec_wr(oss);
 
-    if ( rc == 0 )
-    {
-        set_deleted();
-    }
-
     return rc;
 }
 
