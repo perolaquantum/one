@@ -396,9 +396,6 @@ void OpenNebulaTemplate::set_conf_default()
     set_conf_single("SCRIPTS_REMOTE_DIR", "/var/tmp/one");
     set_conf_single("VM_SUBMIT_ON_HOLD", "NO");
 
-    set_conf_single("POOL_CACHE_SIZE", "15000");
-    set_conf_single("POOL_CACHE_PRESSURE", "1000");
-
     //DB CONFIGURATION
     vvalue.insert(make_pair("BACKEND","sqlite"));
 
