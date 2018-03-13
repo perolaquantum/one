@@ -65,9 +65,13 @@ public:
     int set_line(int oid, PoolObjectSQL * object);
 
 private:
+    /**
+     *  This class represents a cache line. It stores a reference to the pool
+     *  object and a mutex to control concurrent access to the object
+     */
     struct CacheLine
     {
-        CacheLine(PoolObjectSQL * o):in_use(false), object(o)
+        CacheLine(PoolObjectSQL * o):active(0), object(o)
         {
             pthread_mutex_init(&mutex, 0);
         };
@@ -95,14 +99,14 @@ private:
         }
 
         /**
-         *
+         *  Concurrent access to cache line
          */
         pthread_mutex_t mutex;
 
         /**
-         *  Cache line is in use and cannot be removed
+         *  Number of threads waiting on the line mutex
          */
-        bool in_use;
+        int active;
 
         /**
          *  Reference to the object
@@ -111,9 +115,9 @@ private:
     };
 
     /**
-     *  Max number of active references in the cache.
+     *  Max number of references in the cache.
      */
-    unsigned int max_elements;
+    static unsigned int MAX_ELEMENTS;
 
     /**
      *  Cache of pool objects indexed by their oid

@@ -17,10 +17,10 @@
 #include "PoolSQLCache.h"
 #include "Nebula.h"
 
+unsigned int PoolSQLCache::MAX_ELEMENTS = 10000;
+
 PoolSQLCache::PoolSQLCache()
 {
-    max_elements = 0;
-
     pthread_mutex_init(&mutex, 0);
 };
 
@@ -41,7 +41,7 @@ void PoolSQLCache::lock_line(int oid)
     {
         cl = new CacheLine(0);
 
-        cl->in_use = true;
+        cl->active++;
 
         cache.insert(make_pair(oid, cl));
 
@@ -54,7 +54,7 @@ void PoolSQLCache::lock_line(int oid)
 
     cl = it->second;
 
-    cl->in_use = true;
+    cl->active++;
 
     unlock();
 
@@ -90,11 +90,16 @@ int PoolSQLCache::set_line(int oid, PoolObjectSQL * object)
         return -1;
     }
 
-    it->second->in_use = false;
+    it->second->active--;
 
     it->second->object = object;
 
     it->second->unlock();
+
+    if ( cache.size() > MAX_ELEMENTS )
+    {
+        flush_cache_lines();
+    }
 
     unlock();
 
@@ -117,28 +122,29 @@ void PoolSQLCache::flush_cache_lines()
             ++it;
             continue;
         }
-        else
+
+        if ( cl->active > 0 ) // cache line being set
         {
-            if ( cl->in_use ) // cache line being set
+            cl->unlock();
+
+            ++it;
+            continue;
+        }
+
+        if ( cl->object != 0 )
+        {
+            rc =  cl->object->trylock();
+
+            if ( rc == EBUSY ) //object int use
             {
                 cl->unlock();
 
                 ++it;
                 continue;
             }
-            else if ( cl->object != 0 )
-            {
-                rc =  cl->object->trylock();
-
-                if ( rc == EBUSY ) //object int use
-                {
-                    ++it;
-                    continue;
-                }
-            }
         }
 
-        delete it->second; // cache line & pool object locked
+        delete it->second; // cache line & pool object locked & active == 0
 
         it = cache.erase(it);
     }
