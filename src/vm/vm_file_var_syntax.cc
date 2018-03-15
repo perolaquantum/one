@@ -175,7 +175,7 @@ int get_image_path(VirtualMachine * vm,
             delete vfile;
         }
 
-        img = ipool->get(val1, uid, true);
+        img = ipool->get(val1, uid);
 
         if ( img == 0 )
         {
@@ -196,7 +196,7 @@ int get_image_path(VirtualMachine * vm,
 
         if ( !is.fail() )
         {
-            img = ipool->get(iid, true);
+            img = ipool->get(iid);
         }
 
         if ( img == 0 )
@@ -223,7 +223,7 @@ int get_image_path(VirtualMachine * vm,
 
     set<int> gids;
 
-    user = upool->get(vm->get_uid(), true);
+    user = upool->get(vm->get_uid());
 
     if (user != 0)
     {
