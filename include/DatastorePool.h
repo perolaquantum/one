@@ -101,9 +101,9 @@ public:
      *    @param lock locks the Datastore mutex
      *    @return a pointer to the Datastore, 0 if the Datastore could not be loaded
      */
-    Datastore * get(int oid, bool lock)
+    Datastore * get(int oid)
     {
-        return static_cast<Datastore *>(PoolSQL::get(oid,lock));
+        return static_cast<Datastore *>(PoolSQL::get(oid));
     };
 
     /**

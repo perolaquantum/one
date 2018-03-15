@@ -55,9 +55,9 @@ public:
      *    @param lock locks the Zone mutex
      *    @return a pointer to the Zone, 0 if the Zone could not be loaded
      */
-    Zone * get(int oid, bool lock)
+    Zone * get(int oid)
     {
-        return static_cast<Zone *>(PoolSQL::get(oid,lock));
+        return static_cast<Zone *>(PoolSQL::get(oid));
     };
 
     /** Update a particular Zone

@@ -54,9 +54,9 @@ public:
      *    @param lock locks the Vdc mutex
      *    @return a pointer to the Vdc, 0 if the Vdc could not be loaded
      */
-    Vdc * get(int oid, bool lock)
+    Vdc * get(int oid)
     {
-        return static_cast<Vdc *>(PoolSQL::get(oid,lock));
+        return static_cast<Vdc *>(PoolSQL::get(oid));
     };
 
     /** Update a particular Vdc

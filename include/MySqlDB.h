@@ -146,7 +146,8 @@ public:
             int    port,
             string user,
             string password,
-            string database)
+            string database,
+            int    connections)
     {
         throw runtime_error("Aborting oned, MySQL support not compiled!");
     };

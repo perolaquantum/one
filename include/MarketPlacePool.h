@@ -67,9 +67,9 @@ public:
      *    @param lock locks the MarketPlace mutex
      *    @return a pointer to the MarketPlace, 0 if not loaded
      */
-    MarketPlace * get(int oid, bool lock)
+    MarketPlace * get(int oid)
     {
-        return static_cast<MarketPlace *>(PoolSQL::get(oid,lock));
+        return static_cast<MarketPlace *>(PoolSQL::get(oid));
     };
 
     /** Update a particular MarketPlace

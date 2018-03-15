@@ -62,9 +62,9 @@ public:
      *
      *   @return a pointer to the object, 0 in case of failure
      */
-    VMTemplate * get(int oid, bool lock)
+    VMTemplate * get(int oid)
     {
-        return static_cast<VMTemplate *>(PoolSQL::get(oid,lock));
+        return static_cast<VMTemplate *>(PoolSQL::get(oid));
     };
 
     /**

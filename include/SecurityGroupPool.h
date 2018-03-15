@@ -67,9 +67,9 @@ public:
      *    @param lock locks the SecurityGroup mutex
      *    @return a pointer to the SecurityGroup, 0 if the SecurityGroup could not be loaded
      */
-    SecurityGroup * get(int oid, bool lock)
+    SecurityGroup * get(int oid)
     {
-        return static_cast<SecurityGroup *>(PoolSQL::get(oid,lock));
+        return static_cast<SecurityGroup *>(PoolSQL::get(oid));
     };
 
     /** Update a particular SecurityGroup

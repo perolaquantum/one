@@ -66,7 +66,7 @@ public:
      *
      *   @return a pointer to the object, 0 in case of failure
      */
-    PoolObjectSQL * get(int oid, bool lock);
+    PoolObjectSQL * get(int oid);
 
     /**
      *  Check if there is an object with the same for a given user
@@ -256,7 +256,15 @@ protected:
      *
      *   @return a pointer to the object, 0 in case of failure
      */
-    PoolObjectSQL * get(const string& name, int uid, bool lock);
+    PoolObjectSQL * get(const string& name, int uid);
+
+    /**
+     *  Check if an especific oid exists in the table.
+     *   @param oid id of object
+     *
+     *   @return true if object exists
+     */
+    bool exists(int oid, const string& table);
 
     /**
      *  Pointer to the database.

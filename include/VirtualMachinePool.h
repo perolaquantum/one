@@ -78,18 +78,16 @@ public:
      *    @return a pointer to the VM, 0 if the VM could not be loaded
      */
     VirtualMachine * get(
-        int     oid,
-        bool    lock)
+        int     oid)
     {
-        return static_cast<VirtualMachine *>(PoolSQL::get(oid,lock));
+        return static_cast<VirtualMachine *>(PoolSQL::get(oid));
     };
 
     /**
      *  Function to get a VM from the pool, string version for VM ID
      */
     VirtualMachine * get(
-        const string& oid_s,
-        bool          lock)
+        const string& oid_s)
     {
         istringstream iss(oid_s);
         int           oid;
@@ -101,7 +99,7 @@ public:
             return 0;
         }
 
-        return static_cast<VirtualMachine *>(PoolSQL::get(oid,lock));
+        return static_cast<VirtualMachine *>(PoolSQL::get(oid));
     };
 
     /**
@@ -374,6 +372,26 @@ public:
     }
 
     /**
+     * Deletes the NIC that was in the process of being attached
+     *
+     * @param VirtualMachine object
+     */
+    void attach_nic_failure(VirtualMachine * vm)
+    {
+        delete_hotplug_nic(vm, true);
+    }
+
+    /**
+     * Deletes the NIC that was in the process of being detached
+     *
+     * @param VirtualMachine object
+     */
+    void detach_nic_success(VirtualMachine * vm)
+    {
+        delete_hotplug_nic(vm, false);
+    }
+
+    /**
      * Deletes an entry in the HV-2-vmid mapping table for imported VMs
      *   @param deploy_id of the VM
      */
@@ -438,6 +456,13 @@ private:
      * @param attach true for an attach action, false for detach
      */
     void delete_hotplug_nic(int vid, bool attach);
+
+    /**
+     * Helper method for delete attach/detach
+     * @param VirtualMachine object
+     * @param attach true for an attach action, false for detach
+     */
+    void delete_hotplug_nic(VirtualMachine * vm, bool attach);
 };
 
 #endif /*VIRTUAL_MACHINE_POOL_H_*/

@@ -79,9 +79,19 @@ public:
      *    @param lock locks the group mutex
      *    @return a pointer to the group, 0 if the group could not be loaded
      */
-    Group * get(int oid, bool lock)
+    Group * get(int oid)
     {
-        return static_cast<Group *>(PoolSQL::get(oid,lock));
+        return static_cast<Group *>(PoolSQL::get(oid));
+    };
+
+    /**
+     *  Function to know if a especific group exists
+     *    @param oid group unique id
+     *    @return true if group exists
+     */
+    bool exists(int oid)
+    {
+        return PoolSQL::exists(oid, Group::table);
     };
 
     /**
@@ -93,7 +103,7 @@ public:
     {
         static string error_str = "";
 
-        Group * group = get(gid, true);
+        Group * group = get(gid);
 
         if ( group == 0 )
         {

@@ -67,7 +67,7 @@ public:
     {
         int rc = -1;
 
-        Cluster * cluster = get(oid, true);
+        Cluster * cluster = get(oid);
 
         if ( cluster != 0 )
         {
@@ -88,7 +88,7 @@ public:
      */
     void release_vnc_port(int oid, unsigned int port)
     {
-        Cluster * cluster = get(oid, true);
+        Cluster * cluster = get(oid);
 
         if ( cluster != 0 )
         {
@@ -111,7 +111,7 @@ public:
     {
         int rc = -1;
 
-        Cluster * cluster = get(oid, true);
+        Cluster * cluster = get(oid);
 
         if ( cluster != 0 )
         {
@@ -147,9 +147,9 @@ public:
      *    @param lock locks the cluster mutex
      *    @return a pointer to the cluster, 0 if the cluster could not be loaded
      */
-    Cluster * get(int oid, bool lock)
+    Cluster * get(int oid)
     {
-        return static_cast<Cluster *>(PoolSQL::get(oid,lock));
+        return static_cast<Cluster *>(PoolSQL::get(oid));
     };
 
     /**

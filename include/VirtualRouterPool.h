@@ -73,9 +73,9 @@ public:
      *
      *   @return a pointer to the object, 0 in case of failure
      */
-    VirtualRouter * get(int oid, bool lock)
+    VirtualRouter * get(int oid)
     {
-        return static_cast<VirtualRouter *>(PoolSQL::get(oid,lock));
+        return static_cast<VirtualRouter *>(PoolSQL::get(oid));
     };
 
     /**

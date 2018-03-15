@@ -80,9 +80,9 @@ public:
      *    @param lock locks the User mutex
      *    @return a pointer to the User, 0 if the User could not be loaded
      */
-    User * get(int oid, bool lock)
+    User * get(int oid)
     {
-        User * u = static_cast<User *>(PoolSQL::get(oid,lock));
+        User * u = static_cast<User *>(PoolSQL::get(oid));
 
         if ( u != 0 )
         {
@@ -99,10 +99,10 @@ public:
      *    @param lock locks the User mutex
      *    @return a pointer to the User, 0 if the User could not be loaded
      */
-    User * get(string name, bool lock)
+    User * get(string name)
     {
         // The owner is set to -1, because it is not used in the key() method
-        User * u = static_cast<User *>(PoolSQL::get(name,-1,lock));
+        User * u = static_cast<User *>(PoolSQL::get(name,-1));
 
         if ( u != 0 )
         {
@@ -110,6 +110,16 @@ public:
         }
 
         return u;
+    };
+
+    /**
+     *  Function to know if an especific user exists from an oid
+     *    @param oid User unique id
+     *    @return true if user exists
+     */
+    bool exists(int oid)
+    {
+        return PoolSQL::exists(oid, User::table);
     };
 
     /**
