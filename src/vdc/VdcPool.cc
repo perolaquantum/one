@@ -61,7 +61,7 @@ VdcPool::VdcPool(SqlDB * db, bool is_federation_slave): PoolSQL(db, Vdc::table)
             goto error_bootstrap;
         }
 
-        Vdc* vdc = get(rc, true);
+        Vdc* vdc = get(rc);
 
         vdc->add_group(GroupPool::USERS_ID, error_str);
         vdc->add_cluster(Nebula::instance().get_zone_id(), Vdc::ALL_RESOURCES, error_str);
