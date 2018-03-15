@@ -161,7 +161,7 @@ int PoolSQL::allocate(PoolObjectSQL *objsql, string& error_str)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-PoolObjectSQL * PoolSQL::get(int oid, bool olock)
+PoolObjectSQL * PoolSQL::get(int oid)
 {
     if ( oid < 0 )
     {
@@ -187,10 +187,7 @@ PoolObjectSQL * PoolSQL::get(int oid, bool olock)
         return 0;
     }
 
-    if ( olock == true )
-    {
-        objectsql->lock();
-    }
+    objectsql->lock();
 
     cache.set_line(oid, objectsql);
 
@@ -200,7 +197,7 @@ PoolObjectSQL * PoolSQL::get(int oid, bool olock)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-PoolObjectSQL * PoolSQL::get(const string& name, int ouid, bool olock)
+PoolObjectSQL * PoolSQL::get(const string& name, int ouid)
 {
 
     int oid = PoolObjectSQL::select_oid(db, table.c_str(), name, ouid);
@@ -210,7 +207,7 @@ PoolObjectSQL * PoolSQL::get(const string& name, int ouid, bool olock)
         return 0;
     }
 
-    return get(oid, olock);
+    return get(oid);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -515,4 +512,28 @@ void PoolSQL::register_hooks(vector<const VectorAttribute *> hook_mads,
             add_hook(hook);
         }
     }
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+bool PoolSQL::exists(int oid, const string& table)
+{
+    if ( oid < 0 )
+    {
+        return 0;
+    }
+
+    int exists_oid = -1;
+    ostringstream oss;
+    single_cb<int> cb;
+
+    cb.set_callback(&exists_oid);
+
+    oss << "SELECT TOP 1 1 FROM "<< table << " WHERE oid = '" << oid << "';";
+
+    db->exec_rd(oss, &cb);
+
+    cb.unset_callback();
+
+    return exists_oid != -1;
 }
