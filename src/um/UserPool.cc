@@ -76,7 +76,7 @@ UserPool::UserPool(SqlDB * db,
 
     _session_expiration_time = __session_expiration_time;
 
-    User * oneadmin_user = get(0, true);
+    User * oneadmin_user = get(0);
 
     //Slaves do not need to init the pool, just the oneadmin username
     if (is_federation_slave)
@@ -412,7 +412,7 @@ int UserPool::allocate (
     // Add the user to the main and secondary groups
     for(set<int>::const_iterator it = gids.begin(); it != gids.end(); it++)
     {
-        Group * group = gpool->get(*it, true);
+        Group * group = gpool->get(*it);
 
         if( group == 0 ) //Secondary group no longer exists
         {
@@ -445,7 +445,7 @@ error_no_groups:
     goto error_common;
 
 error_group:
-    user = get(*oid, true);
+    user = get(*oid);
 
     if ( user != 0 )
     {
@@ -460,7 +460,7 @@ error_group:
     // of them before a non-existing group was found
     for(set<int>::const_iterator it = gids.begin(); it != gids.end(); it++)
     {
-        Group * group = gpool->get(*it, true);
+        Group * group = gpool->get(*it);
 
         if( group == 0 ) //Secondary group no longer exists
         {
@@ -582,7 +582,7 @@ static int parse_auth_msg(
             return -1;
         }
 
-        if ( Nebula::instance().get_gpool()->get(tmp_gid, false) == 0 )
+        if ( Nebula::instance().get_gpool()->exists(tmp_gid)) //add exists
         {
             error_str = "One or more group IDs do not exist";
             return -1;
@@ -747,7 +747,7 @@ bool UserPool::authenticate_internal(User *        user,
     //--------------------------------------------------------------------------
     //  Cache session token
     //--------------------------------------------------------------------------
-    user = get(user_id, true);
+    user = get(user_id);
 
     if ( user == 0 )
     {
@@ -787,7 +787,7 @@ bool UserPool::authenticate_internal(User *        user,
 
     for(it = groups_add.begin(); it != groups_add.end(); it++)
     {
-        if (gpool->get(*it, false) != 0)
+        if (gpool->exists(*it))
         {
             user->add_group(*it);
         }
@@ -809,7 +809,7 @@ bool UserPool::authenticate_internal(User *        user,
     // -------------------------------------------------------------------------
     for(it = groups_add.begin(); it != groups_add.end(); it++)
     {
-        group = gpool->get(*it, true);
+        group = gpool->get(*it);
 
         if (group == 0)
         {
@@ -825,7 +825,7 @@ bool UserPool::authenticate_internal(User *        user,
 
     for(it = groups_remove.begin(); it != groups_remove.end(); it++)
     {
-        group = gpool->get(*it, true);
+        group = gpool->get(*it);
 
         if (group == 0)
         {
@@ -930,7 +930,7 @@ bool UserPool::authenticate_server(User *        user,
         goto wrong_server_token;
     }
 
-    user = get(target_username,true);
+    user = get(target_username);
 
     if ( user == 0 )
     {
@@ -977,7 +977,7 @@ bool UserPool::authenticate_server(User *        user,
         goto auth_failure_driver;
     }
 
-    user = get(user_id, true);
+    user = get(user_id);
 
     if (user != 0)
     {
@@ -1198,7 +1198,7 @@ bool UserPool::authenticate(const string& session,
         return false;
     }
 
-    user = get(username,true);
+    user = get(username);
 
     if (user != 0 ) //User known to OpenNebula
     {
@@ -1311,7 +1311,7 @@ int UserPool::dump(ostringstream& oss, const string& where, const string& limit)
 string UserPool::get_token_password(int oid, int bck_oid){
 
     string token_password = "";
-    User * user = get(oid, true);
+    User * user = get(oid);
 
     if (user != 0)
     {
@@ -1319,7 +1319,7 @@ string UserPool::get_token_password(int oid, int bck_oid){
         user->unlock();
     }
     else{
-        user = get(bck_oid, true);
+        user = get(bck_oid);
         if (user != 0)
         {
             user->get_template_attribute("TOKEN_PASSWORD", token_password);
