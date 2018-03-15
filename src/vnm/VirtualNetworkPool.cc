@@ -149,7 +149,7 @@ int VirtualNetworkPool::allocate (
     // Get a free VLAN_ID from the pool if needed
     if ( *oid != -1 )
     {
-        vn = get(*oid, true);
+        vn = get(*oid);
 
         if ( set_vlan_id(vn) != 0 )
         {
@@ -189,7 +189,7 @@ VirtualNetwork * VirtualNetworkPool::get_nic_by_name(VirtualMachineNic * nic,
         return 0;
     }
 
-    VirtualNetwork * vnet = get(name, uid, true);
+    VirtualNetwork * vnet = get(name, uid);
 
     if (vnet == 0)
     {
@@ -218,7 +218,7 @@ VirtualNetwork * VirtualNetworkPool::get_nic_by_id(const string& id_s,
 
     if( !is.fail() )
     {
-        vnet = get(id,true);
+        vnet = get(id);
     }
 
     if (vnet == 0)
@@ -455,7 +455,7 @@ void VirtualNetworkPool::release_vlan_id(VirtualNetwork *vn)
 
 AddressRange * VirtualNetworkPool::allocate_ar(int rid, string &err)
 {
-    VirtualNetwork * rvn = get(rid, true);
+    VirtualNetwork * rvn = get(rid);
 
     if ( rvn == 0 )
     {
@@ -477,7 +477,7 @@ AddressRange * VirtualNetworkPool::allocate_ar(int rid, string &err)
 
 int VirtualNetworkPool::add_ar(int rid, AddressRange *rar, string &err)
 {
-    VirtualNetwork * rvn = get(rid, true);
+    VirtualNetwork * rvn = get(rid);
 
     if ( rvn == 0 )
     {
@@ -518,7 +518,7 @@ int VirtualNetworkPool::reserve_addr(int pid, int rid, unsigned int rsize, strin
         return -1;
     }
 
-    VirtualNetwork * pvn = get(pid, true);
+    VirtualNetwork * pvn = get(pid);
 
     if ( pvn == 0 )
     {
@@ -558,7 +558,7 @@ int VirtualNetworkPool::reserve_addr(int pid, int rid, unsigned int rsize, unsig
         return -1;
     }
 
-    VirtualNetwork * pvn = get(pid, true);
+    VirtualNetwork * pvn = get(pid);
 
     if ( pvn == 0 )
     {
@@ -598,7 +598,7 @@ int VirtualNetworkPool::reserve_addr_by_ip6(int pid, int rid, unsigned int rsize
         return -1;
     }
 
-    VirtualNetwork * pvn = get(pid, true);
+    VirtualNetwork * pvn = get(pid);
 
     if ( pvn == 0 )
     {
@@ -638,7 +638,7 @@ int VirtualNetworkPool::reserve_addr_by_ip(int pid, int rid, unsigned int rsize,
         return -1;
     }
 
-    VirtualNetwork * pvn = get(pid, true);
+    VirtualNetwork * pvn = get(pid);
 
     if ( pvn == 0 )
     {
@@ -678,7 +678,7 @@ int VirtualNetworkPool::reserve_addr_by_mac(int pid, int rid, unsigned int rsize
         return -1;
     }
 
-    VirtualNetwork * pvn = get(pid, true);
+    VirtualNetwork * pvn = get(pid);
 
     if ( pvn == 0 )
     {
