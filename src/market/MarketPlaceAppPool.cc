@@ -226,7 +226,7 @@ int MarketPlaceAppPool::import(const std::string& t64, int mp_id,
         }
     }
 
-    MarketPlaceApp * mp_aux = get(app->name, 0, true);
+    MarketPlaceApp * mp_aux = get(app->name, 0);
 
     if( mp_aux != 0 ) //Marketplace app already imported
     {
