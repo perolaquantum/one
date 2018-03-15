@@ -56,7 +56,7 @@ ClusterPool::ClusterPool(SqlDB * db, const VectorAttribute * _vnc_conf):
             goto error_bootstrap;
         }
 
-        Cluster* cluster = get(DEFAULT_CLUSTER_ID, true);
+        Cluster* cluster = get(DEFAULT_CLUSTER_ID);
 
         if (cluster == 0)
         {
