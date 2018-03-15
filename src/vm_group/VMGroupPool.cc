@@ -78,11 +78,11 @@ VMGroup * VMGroupPool::get_from_attribute(const VectorAttribute *va, int _uid)
             vmg_uid = _uid;
         }
 
-        vmgroup = get(vmg_name, vmg_uid, true);
+        vmgroup = get(vmg_name, vmg_uid);
     }
     else if ( va->vector_value("VMGROUP_ID", vmg_id) == 0 )
     {
-        vmgroup = get(vmg_id, true);
+        vmgroup = get(vmg_id);
     }
 
     return vmgroup;
@@ -146,7 +146,7 @@ void VMGroupPool::del_vm(const VectorAttribute * va, int vid)
         return;
     }
 
-    VMGroup * vmgroup = get(vmg_id, true);
+    VMGroup * vmgroup = get(vmg_id);
 
     if ( vmgroup == 0 )
     {
