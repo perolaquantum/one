@@ -38,7 +38,7 @@ SecurityGroupPool::SecurityGroupPool(SqlDB * db):PoolSQL(db,SecurityGroup::table
 
         Nebula& nd         = Nebula::instance();
         UserPool * upool   = nd.get_upool();
-        User *    oneadmin = upool->get(0, false);
+        User *    oneadmin = upool->get(0);
 
         string error;
 
@@ -141,7 +141,7 @@ void SecurityGroupPool::get_security_group_rules(int vmid, int sgid,
     int vnet_id;
     VirtualNetworkPool* vnet_pool = Nebula::instance().get_vnpool();
 
-    SecurityGroup* sg = get(sgid, true);
+    SecurityGroup* sg = get(sgid);
 
     if (sg == 0)
     {
@@ -167,7 +167,7 @@ void SecurityGroupPool::get_security_group_rules(int vmid, int sgid,
 
             VectorAttribute* rule = *rule_it;
 
-            VirtualNetwork* vnet  = vnet_pool->get(vnet_id, true);
+            VirtualNetwork* vnet  = vnet_pool->get(vnet_id);
 
             if (vnet == 0)
             {
@@ -200,7 +200,7 @@ void SecurityGroupPool::release_security_groups(int id, set<int>& sgs)
 
     for (it = sgs.begin(); it != sgs.end(); it++)
     {
-        sg = get(*it, true);
+        sg = get(*it);
 
         if (sg == 0)
         {
