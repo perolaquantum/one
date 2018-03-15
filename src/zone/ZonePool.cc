@@ -208,7 +208,7 @@ unsigned int ZonePool::get_zone_servers(int zone_id,
 
     ZoneServers::zone_iterator zit;
 
-    Zone * zone = get(zone_id, true);
+    Zone * zone = get(zone_id);
 
     if ( zone == 0 )
     {
