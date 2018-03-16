@@ -30,7 +30,7 @@ void RequestManagerUser::
         return;
     }
 
-    if ( (static_cast<UserPool *>(pool))->exists(id) )
+    if ( pool->exist(id) == -1 )
     {
         att.resp_id = id;
         failure_response(NO_EXISTS, att);

@@ -516,24 +516,4 @@ void PoolSQL::register_hooks(vector<const VectorAttribute *> hook_mads,
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-bool PoolSQL::exists(int oid, const string& table)
-{
-    if ( oid < 0 )
-    {
-        return 0;
-    }
 
-    int exists_oid = -1;
-    ostringstream oss;
-    single_cb<int> cb;
-
-    cb.set_callback(&exists_oid);
-
-    oss << "SELECT TOP 1 1 FROM "<< table << " WHERE oid = '" << oid << "';";
-
-    db->exec_rd(oss, &cb);
-
-    cb.unset_callback();
-
-    return exists_oid != -1;
-}

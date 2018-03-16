@@ -582,7 +582,7 @@ static int parse_auth_msg(
             return -1;
         }
 
-        if ( Nebula::instance().get_gpool()->exists(tmp_gid)) //add exists
+        if ( Nebula::instance().get_gpool()->exist(tmp_gid) == -1 )
         {
             error_str = "One or more group IDs do not exist";
             return -1;
@@ -787,7 +787,7 @@ bool UserPool::authenticate_internal(User *        user,
 
     for(it = groups_add.begin(); it != groups_add.end(); it++)
     {
-        if (gpool->exists(*it))
+        if ( gpool->exist(*it) != -1 )
         {
             user->add_group(*it);
         }

@@ -1317,8 +1317,16 @@ void LifeCycleManager::attach_failure_action(int vid)
     if ( vm->get_lcm_state() == VirtualMachine::HOTPLUG ||
          vm->get_lcm_state() == VirtualMachine::HOTPLUG_PROLOG_POWEROFF )
     {
+        vm->unlock();
 
-        vm->delete_attach_disk();
+        vmpool->delete_attach_disk(vid);
+
+        vm = vmpool->get(vid);
+
+        if ( vm == 0 )
+        {
+            return;
+        }
 
         if ( vm->get_lcm_state() == VirtualMachine::HOTPLUG )
         {
@@ -1359,8 +1367,16 @@ void LifeCycleManager::detach_success_action(int vid)
     if ( vm->get_lcm_state() == VirtualMachine::HOTPLUG ||
          vm->get_lcm_state() == VirtualMachine::HOTPLUG_EPILOG_POWEROFF )
     {
+        vm->unlock();
 
-        vm->delete_attach_disk();
+        vmpool->delete_attach_disk(vid);
+
+        vm = vmpool->get(vid);
+
+        if ( vm == 0 )
+        {
+            return;
+        }
 
         if ( vm->get_lcm_state() == VirtualMachine::HOTPLUG )
         {
@@ -1630,8 +1646,16 @@ void LifeCycleManager::attach_nic_failure_action(int vid)
 
     if ( vm->get_lcm_state() == VirtualMachine::HOTPLUG_NIC )
     {
+        vm->unlock();
 
-        vmpool->attach_nic_failure(vm);
+        vmpool->attach_nic_failure(vid);
+
+        vm = vmpool->get(vid);
+
+        if ( vm == 0 )
+        {
+            return;
+        }
 
         vm->set_state(VirtualMachine::RUNNING);
 
@@ -1662,8 +1686,16 @@ void LifeCycleManager::detach_nic_success_action(int vid)
 
     if ( vm->get_lcm_state() == VirtualMachine::HOTPLUG_NIC )
     {
+        vm->unlock();
 
-        vmpool->detach_nic_success(vm);
+        vmpool->detach_nic_success(vid);
+
+        vm = vmpool->get(vid);
+
+        if ( vm == 0 )
+        {
+            return;
+        }
 
         vm->set_state(VirtualMachine::RUNNING);
 

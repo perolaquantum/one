@@ -113,16 +113,6 @@ public:
     };
 
     /**
-     *  Function to know if an especific user exists from an oid
-     *    @param oid User unique id
-     *    @return true if user exists
-     */
-    bool exists(int oid)
-    {
-        return PoolSQL::exists(oid, User::table);
-    };
-
-    /**
      *  Function to get the token password of an user from the pool
      *    @param uid creator of the object
      *    @param uid owner of the object, only used if the creator not exists

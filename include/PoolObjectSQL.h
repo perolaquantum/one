@@ -602,6 +602,16 @@ protected:
             int _uid);
 
     /**
+     *  Check if the object exists
+     *    @param db pointer to the db
+     *    @param _table for the objects
+     *    @param _oid of the object
+     *
+     *    @return -1 if not found or oid otherwise
+     */
+    static int exist(SqlDB *db, const char * _table, int _oid);
+
+    /**
      *  Drops object from the database
      *    @param db pointer to the db
      *    @return 0 on success

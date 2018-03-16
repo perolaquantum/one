@@ -85,16 +85,6 @@ public:
     };
 
     /**
-     *  Function to know if a especific group exists
-     *    @param oid group unique id
-     *    @return true if group exists
-     */
-    bool exists(int oid)
-    {
-        return PoolSQL::exists(oid, Group::table);
-    };
-
-    /**
      *  Returns the name of a group
      *    @param id of the group
      *    @return name of the group

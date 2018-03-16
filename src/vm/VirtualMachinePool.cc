@@ -1037,6 +1037,7 @@ void VirtualMachinePool::delete_attach_disk(int vid)
     }
 
     VirtualMachineDisk * disk = vm->delete_attach_disk();
+
     uid  = vm->get_uid();
     gid  = vm->get_gid();
     oid  = vm->get_oid();
@@ -1152,56 +1153,3 @@ void VirtualMachinePool::delete_hotplug_nic(int vid, bool attach)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-void VirtualMachinePool::delete_hotplug_nic(VirtualMachine *  vm, bool attach)
-{
-    VirtualMachineNic * nic;
-
-    int uid;
-    int gid;
-    int oid;
-
-    set<int> pre, post;
-
-    Template tmpl;
-
-    vm->get_security_groups(pre);
-
-    nic = vm->delete_attach_nic();
-
-    if ( nic == 0 )
-    {
-        update(vm);
-
-        return;
-    }
-
-    if (attach)
-    {
-        vm->clear_nic_context(nic->get_nic_id());
-    }
-
-    uid  = vm->get_uid();
-    gid  = vm->get_gid();
-    oid  = vm->get_oid();
-
-    vm->get_security_groups(post);
-
-    for (set<int>::iterator it = pre.begin(); it != pre.end(); ++it)
-    {
-        if ( post.find(*it) == post.end() )
-        {
-            vm->remove_security_group(*it);
-        }
-    }
-
-    update(vm);
-
-    nic->release_network_leases(oid);
-
-    tmpl.set(nic->vector_attribute());
-
-    Quotas::quota_del(Quotas::NETWORK, uid, gid, &tmpl);
-}
-
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */

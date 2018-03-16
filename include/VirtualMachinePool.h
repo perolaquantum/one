@@ -372,26 +372,6 @@ public:
     }
 
     /**
-     * Deletes the NIC that was in the process of being attached
-     *
-     * @param VirtualMachine object
-     */
-    void attach_nic_failure(VirtualMachine * vm)
-    {
-        delete_hotplug_nic(vm, true);
-    }
-
-    /**
-     * Deletes the NIC that was in the process of being detached
-     *
-     * @param VirtualMachine object
-     */
-    void detach_nic_success(VirtualMachine * vm)
-    {
-        delete_hotplug_nic(vm, false);
-    }
-
-    /**
      * Deletes an entry in the HV-2-vmid mapping table for imported VMs
      *   @param deploy_id of the VM
      */
@@ -456,13 +436,6 @@ private:
      * @param attach true for an attach action, false for detach
      */
     void delete_hotplug_nic(int vid, bool attach);
-
-    /**
-     * Helper method for delete attach/detach
-     * @param VirtualMachine object
-     * @param attach true for an attach action, false for detach
-     */
-    void delete_hotplug_nic(VirtualMachine * vm, bool attach);
 };
 
 #endif /*VIRTUAL_MACHINE_POOL_H_*/

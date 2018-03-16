@@ -85,6 +85,11 @@ public:
         return PoolObjectSQL::select_oid(db, table.c_str(), name, -1);
     }
 
+    int exist(int oid)
+    {
+        return PoolObjectSQL::exist(db, table.c_str(), oid);
+    }
+
     /**
      *  Finds a set objects that satisfies a given condition
      *   @param oids a vector with the oids of the objects.
@@ -257,14 +262,6 @@ protected:
      *   @return a pointer to the object, 0 in case of failure
      */
     PoolObjectSQL * get(const string& name, int uid);
-
-    /**
-     *  Check if an especific oid exists in the table.
-     *   @param oid id of object
-     *
-     *   @return true if object exists
-     */
-    bool exists(int oid, const string& table);
 
     /**
      *  Pointer to the database.
