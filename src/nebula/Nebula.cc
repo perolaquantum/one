@@ -1119,6 +1119,7 @@ void Nebula::start(bool bootstrap_only)
 
     im->finalize();
     rm->finalize();
+    authm->finalize();
     hm->finalize();
     imagem->finalize();
     marketm->finalize();
@@ -1137,6 +1138,7 @@ void Nebula::start(bool bootstrap_only)
     pthread_join(im->get_thread_id(),0);
     pthread_join(rm->get_thread_id(),0);
     pthread_join(hm->get_thread_id(),0);
+    pthread_join(authm->get_thread_id(),0);
     pthread_join(imagem->get_thread_id(),0);
     pthread_join(marketm->get_thread_id(),0);
     pthread_join(ipamm->get_thread_id(),0);
